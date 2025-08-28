@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Accent palette */
+:root {
+  --accent: 99 102 241; /* indigo-500 */
+  --accent-50: 238 242 255; /* indigo-50 */
+  --accent-100: 224 231 255; /* indigo-100 */
+}
+
+html, body, #root { height: 100%; }
+/* Clean, modern background with a gentle top glow */
+body {
+  @apply text-gray-900 antialiased;
+  background-color: #f8fafc; /* slate-50 */
+  background-image: linear-gradient(180deg, rgba(var(--accent),0.06), rgba(255,255,255,0) 260px);
+}
+
+/* Hide native number input spinners for a cleaner UI */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Reusable UI primitives */
+.btn { @apply inline-flex items-center gap-2 rounded border px-3 py-1 text-sm transition-colors bg-white text-gray-800 hover:bg-indigo-50 border-indigo-100; }
+.btn-primary { @apply inline-flex items-center gap-2 rounded px-3 py-1 text-sm transition-colors text-white shadow; background: linear-gradient(180deg, rgb(var(--accent)) 0%, rgb(79 70 229) 100%);} 
+.btn-primary:hover { filter: brightness(0.97); }
+.btn-danger { @apply inline-flex items-center gap-2 rounded border px-3 py-1 text-sm transition-colors bg-white text-red-600 border-red-300 hover:bg-red-50; }
+.input { @apply border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white; }
+.tile { @apply bg-white rounded-xl border p-4 md:p-5 transition-shadow shadow-sm hover:shadow-md border-indigo-100; }
+.tile-label { @apply text-xs text-gray-500 flex items-center gap-2; }
+.tile-tight { @apply p-3; }
+
+/* Header polish */
+header { @apply backdrop-blur border-b border-indigo-100; background-color: rgba(255,255,255,0.75); }

@@ -1,0 +1,11 @@
+**/.DS_Store
+.DS_Store
+
+# Environment files
+.env
+.env.*.local
+
+# Common tooling caches (optional)
+.eslintcache
+.vite
+coverage/
