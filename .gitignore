@@ -9,3 +9,4 @@
 .eslintcache
 .vite
 coverage/
+docs/

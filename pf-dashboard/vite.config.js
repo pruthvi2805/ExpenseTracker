@@ -7,9 +7,9 @@ export default defineConfig({
   // Ensure assets resolve under the repo subpath
   base: '/ExpenseTracker/',
   plugins: [react()],
-  // Emit production build to top-level docs/ for Pages
+  // Emit production build locally to dist/; CI will publish it to Pages
   build: {
-    outDir: '../docs',
+    outDir: 'dist',
     emptyOutDir: true,
   },
 })
