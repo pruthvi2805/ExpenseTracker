@@ -8,6 +8,10 @@ import './index.css'
 import './sw-register.js'
 import App from './App.jsx'
 
+// Trivial runtime log to ensure a new build hash for update testing
+if (typeof window !== 'undefined') {
+  console.debug('ExpenseTracker: app bootstrap')
+}
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter basename={import.meta.env.BASE_URL}>
