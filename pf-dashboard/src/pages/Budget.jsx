@@ -125,7 +125,7 @@ export default function Budget(){
   return (
     <div className="space-y-4">
       <PageHeader title="Budget" right={saving ? 'Saving…' : 'All changes saved'} />
-      <p className="text-sm text-gray-600">Set Plan and enter Actuals for the selected month. Δ is Actual − Plan (red means over plan).</p>
+      <p className="text-sm text-gray-600">Set Plan and enter Actuals for the selected month. For expenses, Δ = Actual − Plan (red = overspend). In <b>Allocations</b>, higher Actual is better (meeting/exceeding your savings and investment plan).</p>
       <div className="flex gap-2 border-b">
         {['fixed','variable','loans','allocations'].map(t=> (
           <button key={t} className={`px-3 py-2 text-sm transition-colors ${active===t?'border-b-2 border-indigo-500 font-semibold text-indigo-700':'text-gray-600 hover:text-gray-800'}`} onClick={()=>changeTab(t)}>{t[0].toUpperCase()+t.slice(1)}</button>
@@ -322,5 +322,6 @@ function infoFor(title){
   if (title==='Fixed') return 'Predictable monthly bills (rent, utilities, insurance)'
   if (title==='Variable') return 'Day‑to‑day flexible costs (groceries, dining, transport)'
   if (title==='Loans') return 'Loan repayments (car, personal, other)'
+  if (title==='Allocations') return 'Savings transfer (cash→cash) and investment contribution (cash→investments). Not counted as spend.'
   return ''
 }

@@ -24,17 +24,17 @@ export default function Dashboard() {
   if (!data) return <div className="text-sm text-gray-500">Loading…</div>
 
   const tiles = [
-    { label: 'Income', value: money(data.incomeTotal, data.currency), icon: <BanknotesIcon className="w-5 h-5"/> },
-    { label: 'Planned Spend', value: money(data.plannedTotal, data.currency), icon: <CalendarDaysIcon className="w-5 h-5"/> },
-    { label: 'Spend', value: money(data.expenseTotal, data.currency), icon: <ReceiptPercentIcon className="w-5 h-5"/> },
-    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: data.netCash >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.netCash>=0?'text-emerald-600':'text-red-600'}`} /> }
+    { label: 'Income', value: money(data.incomeTotal, data.currency), icon: <BanknotesIcon className="w-5 h-5"/>, title: 'Sum of monthly income totals (or itemized incomes if totals are blank).'},
+    { label: 'Planned Spend', value: money(data.plannedTotal, data.currency), icon: <CalendarDaysIcon className="w-5 h-5"/>, title: 'Planned consumption only (Fixed, Variable, Loans). Allocations excluded.' },
+    { label: 'Spend', value: money(data.expenseTotal, data.currency), icon: <ReceiptPercentIcon className="w-5 h-5"/>, title: 'Actual consumption only (Fixed, Variable, Loans). Allocations excluded.' },
+    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: data.netCash >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.netCash>=0?'text-emerald-600':'text-red-600'}`} />, title: 'Income − Spend − Investment contributions (cash‑reducing allocations).'}
   ]
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {tiles.map((t) => (
-          <div key={t.label} className="tile">
+          <div key={t.label} className="tile" title={t.title}>
             <div className="tile-label">{t.icon}{t.label}</div>
             <div className={`text-2xl font-semibold ${t.cls || ''}`}>{t.value}</div>
           </div>
@@ -55,7 +55,7 @@ export default function Dashboard() {
         <div className="tile">
           <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
             <h2 className="font-semibold">Budget Status</h2>
-            <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>Actual − Plan by section</span>
+            <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>Actual − Plan by section (Allocations shown separately; higher is better)</span>
           </div>
           {data.deltaTotal > 0 && (
             <p className="text-sm text-red-600">Overbudget: <b>{money(data.deltaTotal, data.currency)}</b></p>
@@ -78,7 +78,7 @@ export default function Dashboard() {
       <div className="tile">
         <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
           <h2 className="font-semibold">Spend Mix</h2>
-          <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><ChartPieIcon className="w-4 h-4"/>Actual spend split by section</span>
+          <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><ChartPieIcon className="w-4 h-4"/>Consumption spend split (excludes allocations)</span>
         </div>
         <div className="flex gap-6 text-sm mb-3">
           <div>Fixed: <b>{money(data.expenseFixed, data.currency)}</b></div>

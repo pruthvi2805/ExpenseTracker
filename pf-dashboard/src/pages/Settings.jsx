@@ -54,14 +54,14 @@ export default function Settings() {
             <input type="number" step="0.01" min="0" className="input" value={s.minSavings} onChange={(e)=>{
             const v=e.target.value; if(v===''||/^\d*(?:\.\d{0,2})?$/.test(v)) setS({...s,minSavings:v})
           }} />
-            <p className="text-[11px] text-gray-500 mt-1">The lowest you’re comfortable letting savings go.</p>
+            <p className="text-[11px] text-gray-500 mt-1">The lowest cash savings you’re comfortable going down to.</p>
           </div>
           <div>
             <label className="block text-xs text-gray-500">Current Savings</label>
             <input type="number" step="0.01" min="0" className="input" value={s.currentSavings} onChange={(e)=>{
             const v=e.target.value; if(v===''||/^\d*(?:\.\d{0,2})?$/.test(v)) setS({...s,currentSavings:v})
           }} />
-            <p className="text-[11px] text-gray-500 mt-1">What you have now. Used to compute <i>After Month = Current + Net</i>.</p>
+            <p className="text-[11px] text-gray-500 mt-1">Your current cash savings. Used to compute <i>After Month (Cash) = Current + Net Cash</i>.</p>
           </div>
           {/* Start Month removed as it has no functional impact */}
           <div className="md:col-span-2 mt-2">
