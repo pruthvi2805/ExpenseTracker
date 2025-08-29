@@ -13,10 +13,10 @@ const stores = {
 }
 
 function uid() {
-  try {
-    // Modern browsers
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
-  } catch {}
+  // Prefer native UUID if available
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
   // Fallback: timestamp + random
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }
@@ -172,7 +172,7 @@ export const Expense = {
     const all = await this.all()
     return all.filter((e) => e.monthKey ? e.monthKey === monthKey : (e.date || '').startsWith(monthKey))
   },
-  async create({ monthKey, date, description, amount, categoryId, label, account, notes }) {
+  async create({ monthKey, date, description, amount, categoryId, account, notes }) {
     // date is optional; monthKey is required
     if (!monthKey) throw new Error('Month required')
     if (date) validateDate(date)

@@ -31,7 +31,7 @@ export default function Settings() {
         <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-gray-500">Currency</label>
-            <select className="input" value={s.currency} onChange={(e)=>setS({...s,currency:e.target.value})}>
+            <select className="select" value={s.currency} onChange={(e)=>setS({...s,currency:e.target.value})}>
             <option value="EUR">EUR — Euro</option>
             <option value="USD">USD — US Dollar</option>
             <option value="GBP">GBP — British Pound</option>
@@ -86,7 +86,7 @@ export default function Settings() {
             <input type="file" accept="application/json" className="hidden" onChange={async(e)=>{
               const file = e.target.files?.[0]; if(!file) return;
               const txt = await file.text();
-              try { await importAll(JSON.parse(txt)); location.reload() } catch(err){ alert('Invalid backup file') }
+              try { await importAll(JSON.parse(txt)); location.reload() } catch { alert('Invalid backup file') }
             }} />
           </label>
           <p className="text-xs text-gray-500">Export creates a local file you can store safely. Import replaces your current data.</p>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useMonth } from '../lib/monthContext.jsx'
+import { useMonth } from '../lib/useMonth.js'
 import { Plan as PlanStore, Settings as SettingsStore } from '../lib/db.js'
 import { leaves as taxLeaves } from '../lib/taxonomy.js'
 import { emit, Events } from '../lib/bus.js'
@@ -126,7 +126,7 @@ function CopyPrev({ monthKey, setData }){
       const prevKey = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`
       const prevPlan = await PlanStore.get(prevKey)
       if (prevPlan && prevPlan.data) setData(prevPlan.data)
-    } catch {}
+    } catch (e) { void e }
   }
   return <button className="px-3 py-1 rounded border text-sm" onClick={copy} title="Copy previous month's plan into this month">Copy last month</button>
 }

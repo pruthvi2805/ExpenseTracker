@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useMonth } from '../lib/monthContext.jsx'
+import { useMonth } from '../lib/useMonth.js'
 import { computeMonth } from '../lib/calc.js'
 
 export default function Summary(){
@@ -48,4 +48,3 @@ function Tile({label,v,cls}){ return (
 )}
 
 function money(v,currency='EUR'){ const n=Number(v||0); return new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n) }
-

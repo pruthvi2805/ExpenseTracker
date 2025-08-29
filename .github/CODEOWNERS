@@ -1,0 +1,5 @@
+# Auto-assign PRs to you. Do not enable "Require review from Code Owners" 
+# unless you have another account to approve (GitHub does not allow self-approval).
+
+* @pruthvi2805
+
