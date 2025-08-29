@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useMonth } from '../lib/useMonth.js'
 import { Plan as PlanStore, Actuals as ActualsStore, Settings as SettingsStore, CustomCats } from '../lib/db.js'
 import { ArrowUturnLeftIcon, SparklesIcon, TrashIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
-import { leaves as taxLeaves } from '../lib/taxonomy.js'
+import { leaves as taxLeaves, isAllocationByLeafId } from '../lib/taxonomy.js'
 import PageHeader from '../components/PageHeader.jsx'
 import CurrencyInput from '../components/CurrencyInput.jsx'
 
@@ -63,9 +63,10 @@ export default function Budget(){
     } catch (e) { void e }
   }, [hideZero])
 
-  const fixedCats = cats.filter(c=> (c.section? c.section==='fixed' : !c.variable) && c.parentId !== 'loans')
-  const loanCats = cats.filter(c=> c.section? c.section==='loans' : c.parentId==='loans')
-  const variableCats = cats.filter(c=> c.section? c.section==='variable' : !!c.variable)
+  const fixedCats = cats.filter(c=> c.section==='fixed')
+  const loanCats = cats.filter(c=> c.section==='loans')
+  const variableCats = cats.filter(c=> c.section==='variable')
+  const allocationCats = cats.filter(c=> c.section==='allocations')
   const sum = (obj, list) => list.reduce((a,c)=> a + Number(obj[c.id]||0), 0)
   const plannedFixed = sum(plan, fixedCats), plannedVar = sum(plan, variableCats)
   const actualFixed = sum(actuals, fixedCats), actualVar = sum(actuals, variableCats)
@@ -124,9 +125,9 @@ export default function Budget(){
   return (
     <div className="space-y-4">
       <PageHeader title="Budget" right={saving ? 'Saving…' : 'All changes saved'} />
-      <p className="text-sm text-gray-600">Set Plan and enter Actuals for the selected month. Δ is Actual − Plan (red means over plan).</p>
+      <p className="text-sm text-gray-600">Set Plan and enter Actuals for the selected month. For expenses, Δ = Actual − Plan (red = overspend). In <b>Allocations</b>, higher Actual is better (meeting/exceeding your savings and investment plan).</p>
       <div className="flex gap-2 border-b">
-        {['fixed','variable','loans'].map(t=> (
+        {['fixed','variable','loans','allocations'].map(t=> (
           <button key={t} className={`px-3 py-2 text-sm transition-colors ${active===t?'border-b-2 border-indigo-500 font-semibold text-indigo-700':'text-gray-600 hover:text-gray-800'}`} onClick={()=>changeTab(t)}>{t[0].toUpperCase()+t.slice(1)}</button>
         ))}
       </div>
@@ -154,6 +155,15 @@ export default function Budget(){
           onToggleHide={(v)=>setHideZero({...hideZero,loans:v})}
         />
       )}
+      {active==='allocations' && (
+        <Section title="Allocations" cats={allocationCats} currency={currency}
+          plan={plan} setPlan={setPlan} actuals={actuals} setActuals={setActuals}
+          onDeleteCustom={maybeDeleteCustom}
+          hideZero={false}
+          onToggleHide={()=>{}}
+          allocations
+        />
+      )}
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">
           {active==='fixed' && (<>
@@ -164,6 +174,9 @@ export default function Budget(){
           </>)}
           {active==='loans' && (<>
             Plan <b>{money(sum(plan, loanCats),currency)}</b> • Actual <b>{money(sum(actuals, loanCats),currency)}</b> • Δ <b>{money(sum(actuals, loanCats)-sum(plan, loanCats),currency)}</b>
+          </>)}
+          {active==='allocations' && (<>
+            Planned <b>{money(sum(plan, allocationCats),currency)}</b> • Actual <b>{money(sum(actuals, allocationCats),currency)}</b> • Progress <b className={`${(sum(actuals, allocationCats) >= sum(plan, allocationCats))?'text-emerald-600':'text-red-600'}`}>{sum(actuals, allocationCats) >= sum(plan, allocationCats) ? 'On/Above plan' : 'Below plan'}</b>
           </>)}
         </div>
         <div className="flex gap-2">
@@ -182,7 +195,7 @@ export default function Budget(){
   )
 }
 
-function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, onDeleteCustom, hideZero=false, onToggleHide }){
+function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, onDeleteCustom, hideZero=false, onToggleHide, allocations=false }){
   return (
     <div className="tile tile-tight">
       <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
@@ -212,11 +225,14 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
             const p = Number(plan[c.id]||0)
             const a = Number(actuals[c.id]||0)
             const d = Number((a-p).toFixed(2))
-            const near = p>0 && a>=0.8*p && a<p
-            const chip = d>0? 'bg-red-100 text-red-700' : d<0? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
+            const isAlloc = allocations || isAllocationByLeafId(c.id)
+            const near = !isAlloc && p>0 && a>=0.8*p && a<p
+            const good = isAlloc ? (a>=p ? true : false) : (d<0)
+            const bad = isAlloc ? (a<p ? true : false) : (d>0)
+            const chip = bad? 'bg-red-100 text-red-700' : good? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
             return (
               <>
-              <tr key={c.id} className={`${d>0?'bg-red-50':near?'bg-amber-50':'even:bg-gray-50'}`}>
+              <tr key={c.id} className={`${(!isAlloc && d>0)?'bg-red-50':(!isAlloc && near)?'bg-amber-50':'even:bg-gray-50'}`}>
                 <td className="py-1.5 px-2 pr-3">{c.name}</td>
                 <td className="text-right pr-3">
                   <CurrencyInput currency={currency} value={plan[c.id]} onChange={(v)=>setPlan({...plan,[c.id]:v})} ariaLabel={`Planned for ${c.name}`} title={`Planned monthly amount for ${c.name}`} />
@@ -225,7 +241,7 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
                   <CurrencyInput currency={currency} value={actuals[c.id]} onChange={(v)=>setActuals({...actuals,[c.id]:v})} ariaLabel={`Actual for ${c.name}`} title={`Actual spent for ${c.name}`} />
                 </td>
                 <td className="text-right hidden sm:table-cell">
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{money(Math.abs(d),currency)}</span>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span>
                   {String(c.id).startsWith('custom:') && (
                     <button className="ml-2 text-xs text-red-600 inline-flex items-center gap-1" title="Delete row" onClick={()=>onDeleteCustom?.(c.id)}>
                       <XMarkIcon className="w-3.5 h-3.5"/>
@@ -237,7 +253,7 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
               {/* Mobile-only delta chip under the row */}
               <tr className="sm:hidden">
                 <td className="py-1 px-2 text-right text-xs text-gray-600" colSpan="3">
-                  <span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{money(Math.abs(d),currency)}</span>
+                  <span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span>
                 </td>
               </tr>
               </>
@@ -254,13 +270,16 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
           const p = Number(plan[c.id]||0)
           const a = Number(actuals[c.id]||0)
           const d = Number((a-p).toFixed(2))
-          const near = p>0 && a>=0.8*p && a<p
-          const chip = d>0? 'bg-red-100 text-red-700' : d<0? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
+          const isAlloc = allocations || isAllocationByLeafId(c.id)
+          const near = !isAlloc && p>0 && a>=0.8*p && a<p
+          const good = isAlloc ? (a>=p ? true : false) : (d<0)
+          const bad = isAlloc ? (a<p ? true : false) : (d>0)
+          const chip = bad? 'bg-red-100 text-red-700' : good? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
           return (
-            <div key={c.id} className={`py-2 ${d>0?'bg-red-50':near?'bg-amber-50':''}`}>
+            <div key={c.id} className={`py-2 ${(!isAlloc && d>0)?'bg-red-50':(!isAlloc && near)?'bg-amber-50':''}`}>
               <div className="flex items-start justify-between">
                 <div className="font-medium pr-2">{c.name}</div>
-                <div className="text-xs"><span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{money(Math.abs(d),currency)}</span></div>
+                <div className="text-xs"><span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span></div>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div>
@@ -303,5 +322,6 @@ function infoFor(title){
   if (title==='Fixed') return 'Predictable monthly bills (rent, utilities, insurance)'
   if (title==='Variable') return 'Day‑to‑day flexible costs (groceries, dining, transport)'
   if (title==='Loans') return 'Loan repayments (car, personal, other)'
+  if (title==='Allocations') return 'Savings transfer (cash→cash) and investment contribution (cash→investments). Not counted as spend.'
   return ''
 }

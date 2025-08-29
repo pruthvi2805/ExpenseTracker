@@ -3,6 +3,7 @@ import { useMonth } from '../lib/useMonth.js'
 import { computeMonth } from '../lib/calc.js'
 import { on, Events } from '../lib/bus.js'
 import { Actuals, Plan } from '../lib/db.js'
+import { isAllocationByLeafId } from '../lib/taxonomy.js'
 import { BanknotesIcon, CalendarDaysIcon, ReceiptPercentIcon, ArrowTrendingUpIcon, InformationCircleIcon, ChartPieIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 
 export default function Dashboard() {
@@ -23,17 +24,17 @@ export default function Dashboard() {
   if (!data) return <div className="text-sm text-gray-500">Loading…</div>
 
   const tiles = [
-    { label: 'Income', value: money(data.incomeTotal, data.currency), icon: <BanknotesIcon className="w-5 h-5"/> },
-    { label: 'Planned Spend', value: money(data.plannedTotal, data.currency), icon: <CalendarDaysIcon className="w-5 h-5"/> },
-    { label: 'Actual Spend', value: money(data.expenseTotal, data.currency), icon: <ReceiptPercentIcon className="w-5 h-5"/> },
-    { label: 'Net', value: money(data.net, data.currency), cls: data.net >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.net>=0?'text-emerald-600':'text-red-600'}`} /> }
+    { label: 'Income', value: money(data.incomeTotal, data.currency), icon: <BanknotesIcon className="w-5 h-5"/>, title: 'Sum of monthly income totals (or itemized incomes if totals are blank).'},
+    { label: 'Planned Spend', value: money(data.plannedTotal, data.currency), icon: <CalendarDaysIcon className="w-5 h-5"/>, title: 'Planned consumption only (Fixed, Variable, Loans). Allocations excluded.' },
+    { label: 'Spend', value: money(data.expenseTotal, data.currency), icon: <ReceiptPercentIcon className="w-5 h-5"/>, title: 'Actual consumption only (Fixed, Variable, Loans). Allocations excluded.' },
+    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: data.netCash >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.netCash>=0?'text-emerald-600':'text-red-600'}`} />, title: 'Income − Spend − Investment contributions (cash‑reducing allocations).'}
   ]
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {tiles.map((t) => (
-          <div key={t.label} className="tile">
+          <div key={t.label} className="tile" title={t.title}>
             <div className="tile-label">{t.icon}{t.label}</div>
             <div className={`text-2xl font-semibold ${t.cls || ''}`}>{t.value}</div>
           </div>
@@ -46,15 +47,15 @@ export default function Dashboard() {
         <div className="tile">
           <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
             <h2 className="font-semibold">Savings</h2>
-            <span className="text-[11px] text-gray-500">ⓘ Current + Net = After Month</span>
+            <span className="text-[11px] text-gray-500">ⓘ Current + Net Cash = After Month (Cash)</span>
           </div>
           <p className="text-sm">Current savings: <b>{money(data.savingsNow, data.currency)}</b></p>
-          <p className="text-sm">After Month: <b className={data.savingsOk ? 'text-emerald-600' : 'text-red-600'}>{money(data.savingsAfter, data.currency)}</b> (minimum {money(data.savingsMin, data.currency)})</p>
+          <p className="text-sm">After Month (Cash): <b className={data.savingsOk ? 'text-emerald-600' : 'text-red-600'}>{money(data.savingsAfterCash, data.currency)}</b> (minimum {money(data.savingsMin, data.currency)})</p>
         </div>
         <div className="tile">
           <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
             <h2 className="font-semibold">Budget Status</h2>
-            <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>Actual − Plan by section</span>
+            <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>Actual − Plan by section (Allocations shown separately; higher is better)</span>
           </div>
           {data.deltaTotal > 0 && (
             <p className="text-sm text-red-600">Overbudget: <b>{money(data.deltaTotal, data.currency)}</b></p>
@@ -69,6 +70,7 @@ export default function Dashboard() {
             <p className={`${clsDelta(data.deltaFixed)}`}>Fixed: <b>{fmtDelta(data.deltaFixed, data.currency)}</b></p>
             <p className={`${clsDelta(data.deltaVariable)}`}>Variable: <b>{fmtDelta(data.deltaVariable, data.currency)}</b></p>
             <p className={`${clsDelta(data.deltaLoans)}`}>Loans: <b>{fmtDelta(data.deltaLoans, data.currency)}</b></p>
+            <p className={`mt-1 ${data.allocationsDelta>=0?'text-emerald-600':'text-red-600'}`}>Allocations: <b>{data.allocationsDelta>=0?'+':''}{money(data.allocationsDelta, data.currency)}</b> (higher is better)</p>
           </div>
         </div>
       </div>
@@ -76,7 +78,7 @@ export default function Dashboard() {
       <div className="tile">
         <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
           <h2 className="font-semibold">Spend Mix</h2>
-          <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><ChartPieIcon className="w-4 h-4"/>Actual spend split by section</span>
+          <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><ChartPieIcon className="w-4 h-4"/>Consumption spend split (excludes allocations)</span>
         </div>
         <div className="flex gap-6 text-sm mb-3">
           <div>Fixed: <b>{money(data.expenseFixed, data.currency)}</b></div>
@@ -121,8 +123,12 @@ function Trends({ monthKey, currency }){
         d.setMonth(d.getMonth()-i)
         const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
         const [a, p] = await Promise.all([Actuals.get(key), Plan.get(key)])
-        const actual = Object.values(a.data||{}).reduce((s,v)=>s+Number(v||0),0)
-        const planned = Object.values(p.data||{}).reduce((s,v)=>s+Number(v||0),0)
+        const actual = Object.entries(a.data||{})
+          .filter(([id])=>!isAllocationByLeafId(id))
+          .reduce((s,[,v])=>s+Number(v||0),0)
+        const planned = Object.entries(p.data||{})
+          .filter(([id])=>!isAllocationByLeafId(id))
+          .reduce((s,[,v])=>s+Number(v||0),0)
         res.push({ key, actual, planned })
       }
       setRows(res)
@@ -177,7 +183,7 @@ function Trends({ monthKey, currency }){
 
 function CollapsibleCategories({ data }){
   const [open, setOpen] = useState(false)
-  const entries = Object.entries(data.byCategoryId)
+  const entries = Object.entries(data.spendByCategoryId)
   const colors = ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4','#a855f7','#84cc16','#f97316']
   const total = entries.reduce((s,[,v])=> s + Number(v||0), 0)
   let current = 0

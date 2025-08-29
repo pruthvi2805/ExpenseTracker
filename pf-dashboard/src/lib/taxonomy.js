@@ -39,7 +39,14 @@ export const groups = [
   ]},
   { id: 'special', name: 'Special', variable: true, children: [
     { id: 'special:unexpected', name: 'Yearly/Unexpected fund' },
-    { id: 'special:investments', name: 'Investments & savings' },
+  ]},
+
+  // Allocations (non-consumption). These are planned moves of money.
+  // savings_transfer: cash -> cash savings (does not reduce cash)
+  // investment: cash -> investments (reduces cash)
+  { id: 'allocations', name: 'Allocations', variable: false, children: [
+    { id: 'allocations:savings_transfer', name: 'Savings transfer' },
+    { id: 'allocations:investment', name: 'Investment contribution' },
   ]},
 
   // Loans (their own section, treated as fixed in math)
@@ -53,7 +60,7 @@ export const groups = [
 export function leaves() {
   const out = []
   for (const g of groups) {
-    const section = g.id === 'loans' ? 'loans' : (g.variable ? 'variable' : 'fixed')
+    const section = g.id === 'loans' ? 'loans' : (g.id === 'allocations' ? 'allocations' : (g.variable ? 'variable' : 'fixed'))
     for (const c of g.children) out.push({ ...c, parentId: g.id, parentName: g.name, variable: !!g.variable, section })
   }
   return out
@@ -74,4 +81,20 @@ export function leafById(id) {
 export function isVariableByLeafId(id){
   const l = leafById(id)
   return !!(l && l.variable)
+}
+
+// Allocation helpers
+const allocationCashMap = {
+  'allocations:savings_transfer': false, // cash -> cash savings
+  'allocations:investment': true,       // cash -> investments
+}
+
+export function isAllocationByLeafId(id){
+  const leaf = leafById(id)
+  return !!(leaf && leaf.section === 'allocations')
+}
+
+export function allocationAffectsCash(id){
+  if (!isAllocationByLeafId(id)) return false
+  return !!allocationCashMap[id]
 }
