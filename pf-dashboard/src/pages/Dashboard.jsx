@@ -135,13 +135,14 @@ function Trends({ monthKey, currency }){
       <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
         <h2 className="font-semibold">3‑Month Trend</h2>
       </div>
-      <table className="w-full text-sm table-fixed">
+      <div className="overflow-x-auto -mx-2 sm:mx-0">
+      <table className="min-w-[520px] w-full text-sm table-auto">
         <thead>
           <tr className="text-left text-gray-500 bg-gray-50">
             <th className="py-1.5 px-2 rounded-l w-32">Month</th>
             <th className="text-right py-1.5 w-1/4">Actual</th>
             <th className="text-right py-1.5 w-1/4">Planned</th>
-            <th className="text-right py-1.5 rounded-r">Outcome</th>
+            <th className="text-right py-1.5 rounded-r hidden sm:table-cell">Outcome</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -151,16 +152,24 @@ function Trends({ monthKey, currency }){
             const chip = over ? 'bg-red-100 text-red-700' : under ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
             const label = over ? 'Overbudget' : under ? 'Underbudget' : 'On plan'
             return (
+              <>
               <tr key={r.key} className="even:bg-gray-50">
                 <td className="py-1.5 px-2">{r.key}</td>
                 <td className="text-right py-1.5 px-2">{money(r.actual, currency)}</td>
                 <td className="text-right py-1.5 px-2">{money(r.planned, currency)}</td>
-                <td className="text-right py-1.5 px-2"><span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{label}</span></td>
+                <td className="text-right py-1.5 px-2 hidden sm:table-cell"><span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{label}</span></td>
               </tr>
+              <tr className="sm:hidden">
+                <td className="py-1 px-2 text-right text-xs text-gray-600" colSpan="3">
+                  <span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{label}</span>
+                </td>
+              </tr>
+              </>
             )
           })}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

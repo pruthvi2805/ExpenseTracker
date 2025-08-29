@@ -15,8 +15,8 @@ function App() {
     <MonthProvider>
       <div className="min-h-full">
         <header className="shadow-sm">
-          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight">Expense Tracker</h1>
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Expense Tracker</h1>
             <div className="flex items-center gap-2">
               <MonthPicker />
               {location.pathname === '/' && (
@@ -27,7 +27,7 @@ function App() {
             </div>
           </div>
         </header>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
           <nav className="lg:col-span-1 bg-white rounded border p-3 h-max">
             <ul className="space-y-1">
               <li><NavItem to="/" label="Dashboard" icon={<HomeIcon className="w-5 h-5"/>} /></li>

@@ -31,7 +31,7 @@ export default function Settings() {
         <form onSubmit={save} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs text-gray-500">Currency</label>
-            <select className="input" value={s.currency} onChange={(e)=>setS({...s,currency:e.target.value})}>
+            <select className="select" value={s.currency} onChange={(e)=>setS({...s,currency:e.target.value})}>
             <option value="EUR">EUR — Euro</option>
             <option value="USD">USD — US Dollar</option>
             <option value="GBP">GBP — British Pound</option>

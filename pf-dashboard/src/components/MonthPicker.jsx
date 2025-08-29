@@ -10,7 +10,7 @@ export function MonthPicker() {
       </button>
       <input
         type="month"
-        className="border rounded px-2 py-1 text-sm"
+        className="input h-10 sm:h-8 w-[9.5rem] text-base sm:text-sm"
         value={monthKey}
         onChange={(e) => setMonthKey(e.target.value)}
       />
@@ -20,4 +20,3 @@ export function MonthPicker() {
     </div>
   )
 }
-

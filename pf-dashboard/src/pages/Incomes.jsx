@@ -89,50 +89,72 @@ export default function Incomes() {
           <span className={`text-xs ${saving?'text-gray-500':'text-emerald-600'}`}>{saving ? 'Saving…' : (savedAt ? 'All changes saved' : '')}</span>
         </div>
         <p className="text-xs text-gray-600 mb-2">Enter monthly income per source. Leave blank for zero.</p>
-        <table className="w-full text-sm table-fixed">
+        <div className="overflow-x-auto -mx-2 sm:mx-0">
+        <table className="min-w-[560px] w-full text-sm table-auto">
           <thead>
             <tr className="text-left text-gray-500 bg-gray-50">
-              <th className="py-1.5 px-2 w-64 rounded-l">Source</th>
-              <th className="text-right py-1.5 px-2 w-40">Amount</th>
-              <th className="py-1.5 px-2 rounded-r">Notes</th>
+              <th className="py-1.5 px-2 sm:w-64 rounded-l">Source</th>
+              <th className="text-right py-1.5 px-2 sm:w-40">Amount</th>
+              <th className="py-1.5 px-2 rounded-r hidden sm:table-cell">Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {items.map((r, idx) => (
-              <tr key={r.id} className="odd:bg-white even:bg-gray-50">
-                <td className="py-1.5 px-2 w-64">{r.label}</td>
-                <td className="text-right py-1.5 px-2 w-40">
-                  <CurrencyInput
-                    currency={currency}
-                    value={items[idx].amount}
-                    onChange={(v)=>{
-                      const next = [...items]; next[idx] = { ...next[idx], amount: v }
-                      setItems(next)
-                      const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
-                      saveTotals(mapping)
-                    }}
-                    ariaLabel={`Amount for ${r.label}`}
-                    title={`Enter monthly amount for ${r.label} in ${currency}`}
-                  />
-                </td>
-                <td className="py-1.5 px-2">
-                  <input
-                    className="input"
-                    value={items[idx].notes}
-                    placeholder={r.id==='other' ? 'Describe source' : 'Optional'}
-                    onChange={(e)=>{
-                      const v = e.target.value
-                      const next = [...items]; next[idx] = { ...next[idx], notes: v }
-                      setItems(next)
-                      const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
-                      saveTotals(mapping)
-                    }}
-                  />
-                </td>
-              </tr>
+              <>
+                <tr key={r.id} className="odd:bg-white even:bg-gray-50">
+                  <td className="py-1.5 px-2 sm:w-64">{r.label}</td>
+                  <td className="text-right py-1.5 px-2 sm:w-40">
+                    <CurrencyInput
+                      currency={currency}
+                      value={items[idx].amount}
+                      onChange={(v)=>{
+                        const next = [...items]; next[idx] = { ...next[idx], amount: v }
+                        setItems(next)
+                        const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
+                        saveTotals(mapping)
+                      }}
+                      ariaLabel={`Amount for ${r.label}`}
+                      title={`Enter monthly amount for ${r.label} in ${currency}`}
+                    />
+                  </td>
+                  <td className="py-1.5 px-2 hidden sm:table-cell">
+                    <input
+                      className="input"
+                      value={items[idx].notes}
+                      placeholder={r.id==='other' ? 'Describe source' : 'Optional'}
+                      onChange={(e)=>{
+                        const v = e.target.value
+                        const next = [...items]; next[idx] = { ...next[idx], notes: v }
+                        setItems(next)
+                        const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
+                        saveTotals(mapping)
+                      }}
+                    />
+                  </td>
+                </tr>
+                <tr className="sm:hidden odd:bg-white even:bg-gray-50">
+                  <td className="py-1 px-2 text-xs text-gray-600" colSpan="2">
+                    <div className="mt-1">
+                      <input
+                        className="input"
+                        value={items[idx].notes}
+                        placeholder={r.id==='other' ? 'Describe source' : 'Notes (optional)'}
+                        onChange={(e)=>{
+                          const v = e.target.value
+                          const next = [...items]; next[idx] = { ...next[idx], notes: v }
+                          setItems(next)
+                          const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
+                          saveTotals(mapping)
+                        }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              </>
             ))}
           </tbody>
         </table>
+        </div>
         <div className="mt-3 text-sm text-gray-700">Total Income: <b>{money(items.reduce((s,r)=> s + (Number(r.amount)||0), 0), currency)}</b></div>
       </div>
     </div>

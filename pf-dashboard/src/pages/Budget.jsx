@@ -196,13 +196,14 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
           <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>{infoFor(title)}</span>
         </div>
       </div>
-      <table className="w-full text-sm table-fixed">
+      <div className="overflow-x-auto -mx-2 sm:mx-0">
+      <table className="min-w-[560px] w-full text-sm table-auto">
         <thead>
           <tr className="text-left text-gray-500 bg-gray-50 sticky top-0 z-10">
             <th className="py-1.5 px-2 rounded-l w-1/2">Subcategory</th>
             <th className="text-right py-1.5 w-1/4">Planned</th>
             <th className="text-right py-1.5 w-1/4">Actual</th>
-            <th className="text-right py-1.5 rounded-r w-20">Δ</th>
+            <th className="text-right py-1.5 rounded-r w-20 hidden sm:table-cell">Δ</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -215,6 +216,7 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
             const near = p>0 && a>=0.8*p && a<p
             const chip = d>0? 'bg-red-100 text-red-700' : d<0? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
             return (
+              <>
               <tr key={c.id} className={`${d>0?'bg-red-50':near?'bg-amber-50':'even:bg-gray-50'}`}>
                 <td className="py-1.5 px-2 pr-3">{c.name}</td>
                 <td className="text-right pr-3">
@@ -223,7 +225,7 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
                 <td className="text-right pl-3">
                   <CurrencyInput currency={currency} value={actuals[c.id]} onChange={(v)=>setActuals({...actuals,[c.id]:v})} ariaLabel={`Actual for ${c.name}`} title={`Actual spent for ${c.name}`} />
                 </td>
-                <td className="text-right">
+                <td className="text-right hidden sm:table-cell">
                   <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{money(Math.abs(d),currency)}</span>
                   {String(c.id).startsWith('custom:') && (
                     <button className="ml-2 text-xs text-red-600 inline-flex items-center gap-1" title="Delete row" onClick={()=>onDeleteCustom?.(c.id)}>
@@ -233,10 +235,18 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
                   )}
                 </td>
               </tr>
+              {/* Mobile-only delta chip under the row */}
+              <tr className="sm:hidden">
+                <td className="py-1 px-2 text-right text-xs text-gray-600" colSpan="3">
+                  <span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{money(Math.abs(d),currency)}</span>
+                </td>
+              </tr>
+              </>
             )
           })}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
