@@ -5,8 +5,11 @@ import Incomes from './pages/Incomes.jsx'
 import Budget from './pages/Budget.jsx'
 import Settings from './pages/Settings.jsx'
 import Help from './pages/Help.jsx'
+import QuickCapture from './components/QuickCapture.jsx'
 import { MonthPicker } from './components/MonthPicker.jsx'
 import { MonthProvider } from './lib/monthContext.jsx'
+import ToastHub from './components/ToastHub.jsx'
+import Onboarding from './components/Onboarding.jsx'
 
 function App() {
   const location = useLocation()
@@ -44,16 +47,13 @@ function App() {
               <Route path="/help" element={<Help />} />
               <Route path="/settings" element={<Settings />} />
             </Routes>
-            <div className="mt-8 mb-2 flex items-center justify-center gap-3 text-[11px] text-gray-400">
-              <span>Built by Pruthvi</span>
-              <a href="https://github.com/pruthvi2805" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-gray-600">
-                <LinkIcon className="w-4 h-4"/>
-                <span>github.com/pruthvi2805</span>
-              </a>
-            </div>
+            {/* Footer removed by request */}
+            <QuickCapture />
           </main>
         </div>
       </div>
+      <ToastHub />
+      <Onboarding />
     </MonthProvider>
   )
 }
