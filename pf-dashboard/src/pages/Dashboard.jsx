@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useMonth } from '../lib/useMonth.js'
 import { computeMonth } from '../lib/calc.js'
-import { on, Events } from '../lib/bus.js'
+import { on, Events, emit } from '../lib/bus.js'
 import { Actuals, Plan } from '../lib/db.js'
 import { isAllocationByLeafId } from '../lib/taxonomy.js'
 import { BanknotesIcon, CalendarDaysIcon, ReceiptPercentIcon, ArrowTrendingUpIcon, InformationCircleIcon, ChartPieIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
+import { Plan as PlanStore } from '../lib/db.js'
 
 export default function Dashboard() {
   const { monthKey } = useMonth()
@@ -21,14 +22,35 @@ export default function Dashboard() {
     return () => { mounted = false; off() }
   }, [monthKey])
 
+  const [rollover, setRollover] = useState(null)
+  useEffect(()=>{
+    let mounted = true
+    const check = async ()=>{
+      try{
+        const [y,m]=monthKey.split('-').map(Number)
+        const prev = new Date(y, m-2, 1)
+        const prevKey = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`
+        const curPlan = await PlanStore.get(monthKey)
+        const prevPlan = await PlanStore.get(prevKey)
+        const empty = Object.values(curPlan.data||{}).every(v=>Number(v||0)===0)
+        const nonEmptyPrev = Object.values(prevPlan.data||{}).some(v=>Number(v||0)>0)
+        const seen = localStorage.getItem(`pf-rollover:${monthKey}`)
+        if (mounted && empty && nonEmptyPrev && !seen) setRollover({ prevKey })
+      } catch { /* no-op */ }
+    }
+    check()
+    return ()=>{ mounted=false }
+  }, [monthKey])
+
   if (!data) return <div className="text-sm text-gray-500">Loading…</div>
 
   const tiles = [
     { label: 'Income', value: money(data.incomeTotal, data.currency), icon: <BanknotesIcon className="w-5 h-5"/>, title: 'Sum of monthly income totals (or itemized incomes if totals are blank).'},
     { label: 'Planned Spend', value: money(data.plannedTotal, data.currency), icon: <CalendarDaysIcon className="w-5 h-5"/>, title: 'Planned consumption only (Fixed, Variable, Loans). Allocations excluded.' },
     { label: 'Spend', value: money(data.expenseTotal, data.currency), icon: <ReceiptPercentIcon className="w-5 h-5"/>, title: 'Actual consumption only (Fixed, Variable, Loans). Allocations excluded.' },
-    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: data.netCash >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.netCash>=0?'text-emerald-600':'text-red-600'}`} />, title: 'Income − Spend − Investment contributions (cash‑reducing allocations).'}
+    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: data.netCash >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.netCash>=0?'text-emerald-600':'text-red-600'}`} />, title: 'Income − Spend − Investment contributions (cash‑reducing allocations).'},
   ]
+
 
   return (
     <div className="space-y-6">
@@ -42,6 +64,24 @@ export default function Dashboard() {
       </div>
 
       {/* Print moved to header */}
+
+      {rollover && (
+        <div className="tile bg-indigo-50 border-indigo-200">
+          <div className="flex items-center justify-between">
+            <div className="text-sm">Copy last month ({rollover.prevKey}) plan into {monthKey}?</div>
+            <div className="flex gap-2">
+              <button className="btn" onClick={()=>setRollover(null)}>Dismiss</button>
+              <button className="btn-primary" onClick={async()=>{
+                  const p = await PlanStore.get(rollover.prevKey)
+                  await PlanStore.set(monthKey, p.data||{})
+                  localStorage.setItem(`pf-rollover:${monthKey}`,'1')
+                  emit(Events.DataChanged)
+                  setRollover(null)
+              }}>Copy plan</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="tile">
@@ -72,6 +112,35 @@ export default function Dashboard() {
             <p className={`${clsDelta(data.deltaLoans)}`}>Loans: <b>{fmtDelta(data.deltaLoans, data.currency)}</b></p>
             <p className={`mt-1 ${data.allocationsDelta>=0?'text-emerald-600':'text-red-600'}`}>Allocations: <b>{data.allocationsDelta>=0?'+':''}{money(data.allocationsDelta, data.currency)}</b> (higher is better)</p>
           </div>
+        </div>
+      </div>
+
+      <div className="tile">
+        <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
+          <h2 className="font-semibold">Suggestions</h2>
+          <span className="text-[11px] text-gray-500">Fast tips based on this month</span>
+        </div>
+        <div className="space-y-1 text-sm">
+          {(() => {
+            const remaining = Math.max(0, Number((data.plannedTotal - data.expenseTotal).toFixed(2)))
+            const items = []
+            const savingsShort = Math.max(0, Number((data.savingsMin - data.savingsAfterCash).toFixed(2)))
+            if (savingsShort > 0) {
+              items.push(
+                <p key="savings" className="text-red-600">You are {money(savingsShort, data.currency)} below your minimum savings. Reduce spend or cut investment contributions by that amount to stay green.</p>
+              )
+            }
+            items.push(
+              <p key="left">Left to spend this month: <b>{money(remaining, data.currency)}</b></p>
+            )
+            const needAlloc = Math.max(0, Number((data.plannedAllocations - data.allocationsActual).toFixed(2)))
+            if (needAlloc > 0) {
+              items.push(
+                <p key="alloc" className="text-gray-700">To meet your Allocations plan, set aside {money(needAlloc, data.currency)} more.</p>
+              )
+            }
+            return items
+          })()}
         </div>
       </div>
 
@@ -111,6 +180,8 @@ function clsDelta(v){
   if (n < 0) return 'text-emerald-600'
   return 'text-gray-600'
 }
+
+// per-day guidance removed by design for simplicity
 
 function Trends({ monthKey, currency }){
   const [rows, setRows] = useState([])

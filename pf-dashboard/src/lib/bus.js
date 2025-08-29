@@ -19,6 +19,6 @@ export function emit(event, payload) {
 
 export const Events = {
   DataChanged: 'data:changed',
-  SettingsChanged: 'settings:changed'
+  SettingsChanged: 'settings:changed',
+  Toast: 'toast:show'
 }
-

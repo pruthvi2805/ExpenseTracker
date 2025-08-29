@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Settings as SettingsStore, exportAll, importAll } from '../lib/db.js'
+import { showToast } from '../lib/toast.js'
 import { emit, Events } from '../lib/bus.js'
 import { Cog6ToothIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
+import { useMonth } from '../lib/useMonth.js'
+import { Plan as PlanStore, Actuals as ActualsStore } from '../lib/db.js'
+import { leaves as taxLeaves } from '../lib/taxonomy.js'
 
 export default function Settings() {
+  const { monthKey } = useMonth()
   const [s, setS] = useState(null)
   const [saved, setSaved] = useState(false)
 
@@ -86,10 +91,36 @@ export default function Settings() {
             <input type="file" accept="application/json" className="hidden" onChange={async(e)=>{
               const file = e.target.files?.[0]; if(!file) return;
               const txt = await file.text();
-              try { await importAll(JSON.parse(txt)); location.reload() } catch { alert('Invalid backup file') }
+              try {
+                const before = await exportAll()
+                await importAll(JSON.parse(txt));
+                showToast({ message: 'Imported backup', actionLabel: 'Undo', onAction: async()=>{ await importAll(before); location.reload() } })
+                location.reload()
+              } catch { alert('Invalid backup file') }
             }} />
           </label>
-          <p className="text-xs text-gray-500">Export creates a local file you can store safely. Import replaces your current data.</p>
+          <button className="btn" onClick={async()=>{
+            // Export CSV for current month: Category, Section, Planned, Actual, Delta
+            const [p,a] = await Promise.all([PlanStore.get(monthKey), ActualsStore.get(monthKey)])
+            const leaves = taxLeaves()
+            const map = Object.fromEntries(leaves.map(l=>[l.id,l]))
+            const rows = [['Category','Section','Planned','Actual','Delta']]
+            const ids = new Set([...Object.keys(p.data||{}), ...Object.keys(a.data||{})])
+            for (const id of ids){
+              const info = map[id]
+              if (!info) continue
+              const planned = Number(p.data?.[id]||0)
+              const actual = Number(a.data?.[id]||0)
+              const delta = Number((actual - planned).toFixed(2))
+              rows.push([info.name, info.section, planned.toFixed(2), actual.toFixed(2), delta.toFixed(2)])
+            }
+            const csv = rows.map(r=> r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n')
+            const blob = new Blob([csv],{type:'text/csv'})
+            const url = URL.createObjectURL(blob)
+            const ael = document.createElement('a')
+            ael.href = url; ael.download = `pf-${monthKey}.csv`; ael.click(); URL.revokeObjectURL(url)
+          }}>Export CSV (this month)</button>
+          <p className="text-xs text-gray-500">Export creates a local file you can store safely. Import replaces your current data. CSV export uses the selected month on the header.</p>
         </div>
       </div>
     </div>
