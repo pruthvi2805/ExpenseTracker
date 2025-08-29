@@ -350,17 +350,12 @@ function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations
   const p = sum(plan, cats)
   const a = sum(actuals, cats)
   const remaining = p - a
-  const daysLeft = computeDaysLeft(monthKey)
-  const perDay = remaining>0 ? remaining / Math.max(1, daysLeft) : 0
   const money = (v)=> new Intl.NumberFormat(undefined,{style:'currency',currency}).format(Number(v||0))
   const cls = (!allocations ? (remaining>=0 ? 'text-gray-700' : 'text-red-600') : (remaining<=0 ? 'text-emerald-600' : 'text-gray-700'))
   const label = !allocations ? (remaining>=0 ? 'Remaining' : 'Overspent') : (remaining<=0 ? 'Plan met' : 'To allocate')
   const tip = !allocations
     ? 'Remaining = Plan − Actual. If negative, you are overspent.'
     : 'To allocate = Plan − Actual. Plan met when Actual ≥ Plan.'
-  const tipPerDay = !allocations
-    ? 'Left per day = Remaining ÷ days left this month.'
-    : 'Per day to hit plan = To allocate ÷ days left this month.'
   return (
     <div className="mb-2 -mx-2 sm:mx-0">
       <div className="rounded bg-indigo-50 border border-indigo-100 px-2 py-1.5 text-xs flex flex-wrap items-center gap-3">
@@ -373,32 +368,7 @@ function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations
           <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tip} aria-label={tip} />
           <b>{money(Math.abs(remaining))}</b>
         </span>
-        {(!allocations && remaining>0) && (
-          <span className="text-gray-600">• Left per day
-            <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tipPerDay} aria-label={tipPerDay} />
-            <b>{money(perDay)}</b> ({daysLeft} days)
-          </span>
-        )}
-        {(allocations && remaining>0) && (
-          <span className="text-gray-600">• Per day to hit plan
-            <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tipPerDay} aria-label={tipPerDay} />
-            <b>{money(perDay)}</b> ({daysLeft} days)
-          </span>
-        )}
       </div>
     </div>
   )
-}
-
-function computeDaysLeft(monthKey){
-  try {
-    const [y,m] = monthKey.split('-').map(Number)
-    const last = new Date(y, m, 0) // last day of month
-    const today = new Date()
-    if (today.getFullYear()===y && (today.getMonth()+1)===m){
-      const left = last.getDate() - today.getDate() + 1
-      return Math.max(1, left)
-    }
-    return last.getDate()
-  } catch { return 30 }
 }
