@@ -67,7 +67,8 @@ export default function Incomes() {
           <span className={`text-xs ${saving?'text-gray-500':'text-emerald-600'}`}>{saving ? 'Saving…' : (savedAt ? 'All changes saved' : '')}</span>
         </div>
         <p className="text-xs text-gray-600 mb-2">Enter monthly income per source. Leave blank for zero.</p>
-        <div className="overflow-x-auto -mx-2 sm:mx-0">
+        {/* Desktop/tablet table */}
+        <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
         <table className="min-w-[560px] w-full text-sm table-auto">
           <thead>
             <tr className="text-left text-gray-500 bg-gray-50">
@@ -132,6 +133,47 @@ export default function Incomes() {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="sm:hidden divide-y divide-gray-100">
+          {items.map((r, idx) => (
+            <div key={r.id} className="py-2">
+              <div className="font-medium">{r.label}</div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <div>
+                  <div className="text-[11px] text-gray-500 mb-1">Amount</div>
+                  <CurrencyInput
+                    currency={currency}
+                    value={items[idx].amount}
+                    onChange={(v)=>{
+                      const next = [...items]; next[idx] = { ...next[idx], amount: v }
+                      setItems(next)
+                      const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
+                      saveTotals(mapping)
+                    }}
+                    ariaLabel={`Amount for ${r.label}`}
+                    title={`Enter monthly amount for ${r.label} in ${currency}`}
+                  />
+                </div>
+                <div>
+                  <div className="text-[11px] text-gray-500 mb-1">Notes</div>
+                  <input
+                    className="input"
+                    value={items[idx].notes}
+                    placeholder={r.id==='other' ? 'Describe source' : 'Optional'}
+                    onChange={(e)=>{
+                      const v = e.target.value
+                      const next = [...items]; next[idx] = { ...next[idx], notes: v }
+                      setItems(next)
+                      const mapping = Object.fromEntries(next.map(x=>[x.id,{ amount: x.amount, notes: x.notes }]))
+                      saveTotals(mapping)
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         <div className="mt-3 text-sm text-gray-700">Total Income: <b>{money(items.reduce((s,r)=> s + (Number(r.amount)||0), 0), currency)}</b></div>
       </div>

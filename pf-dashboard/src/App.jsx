@@ -5,7 +5,6 @@ import Incomes from './pages/Incomes.jsx'
 import Budget from './pages/Budget.jsx'
 import Settings from './pages/Settings.jsx'
 import Help from './pages/Help.jsx'
-import Summary from './pages/Summary.jsx'
 import { MonthPicker } from './components/MonthPicker.jsx'
 import { MonthProvider } from './lib/monthContext.jsx'
 
