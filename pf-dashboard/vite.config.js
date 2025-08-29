@@ -15,6 +15,8 @@ export default defineConfig({
       includeAssets: ['vite.svg'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        clientsClaim: true,
+        skipWaiting: true,
       },
       manifest: {
         name: 'Expense Tracker',
