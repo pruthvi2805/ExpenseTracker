@@ -12,6 +12,7 @@ A fast, privacy‑friendly personal expense tracker that runs entirely in your b
 - Local‑only data — no backend, import/export JSON backup
 - Mobile and desktop friendly UI
 - GitHub Actions CI for build + lint on pull requests
+- Installable PWA (offline capable) via `vite-plugin-pwa`
 
 ## Live Site
 
@@ -50,11 +51,31 @@ npm run preview -- --host
 
 Vite `base` is set to `/ExpenseTracker/` for GitHub Pages.
 
+### PWA
+
+- The app ships as a PWA with offline caching.
+- On mobile, use “Add to Home Screen” to install.
+- Updates auto‑apply after next load (service worker `autoUpdate`).
+- Icons are generated from `public/vite.svg` during build.
+
 ## Project Structure
 
 - `pf-dashboard/` — Vite app (React)
 - `.github/workflows/ci.yml` — CI: build + lint on PRs
 - `.githooks/pre-push` — local hook to block pushing to `main`
+
+### Removed Legacy Pages
+
+Early prototypes included pages no longer used in the current design. The following files were removed to reduce noise:
+
+- `src/pages/Plan.jsx`
+- `src/pages/Actuals.jsx`
+- `src/pages/Summary.jsx`
+- `src/pages/Categories.jsx`
+- `src/components/ComboBox.jsx` (unused)
+- `src/assets/react.svg` (unused)
+
+The live app routes are: Dashboard, Budget, Income, Settings, Help.
 
 ## Branching & PRs
 

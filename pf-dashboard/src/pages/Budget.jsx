@@ -195,7 +195,8 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
           <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>{infoFor(title)}</span>
         </div>
       </div>
-      <div className="overflow-x-auto -mx-2 sm:mx-0">
+      {/* Desktop/tablet table */}
+      <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
       <table className="min-w-[560px] w-full text-sm table-auto">
         <thead>
           <tr className="text-left text-gray-500 bg-gray-50 sticky top-0 z-10">
@@ -244,6 +245,44 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
           })}
         </tbody>
       </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden divide-y divide-gray-100">
+        {cats.length===0 && <div className="text-center text-gray-500 py-4">No categories</div>}
+        {(hideZero ? cats.filter(c=> (Number(plan[c.id]||0)>0) || (Number(actuals[c.id]||0)>0)) : cats).map(c=>{
+          const p = Number(plan[c.id]||0)
+          const a = Number(actuals[c.id]||0)
+          const d = Number((a-p).toFixed(2))
+          const near = p>0 && a>=0.8*p && a<p
+          const chip = d>0? 'bg-red-100 text-red-700' : d<0? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
+          return (
+            <div key={c.id} className={`py-2 ${d>0?'bg-red-50':near?'bg-amber-50':''}`}>
+              <div className="flex items-start justify-between">
+                <div className="font-medium pr-2">{c.name}</div>
+                <div className="text-xs"><span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{money(Math.abs(d),currency)}</span></div>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <div>
+                  <div className="text-[11px] text-gray-500 mb-1">Planned</div>
+                  <CurrencyInput currency={currency} value={plan[c.id]} onChange={(v)=>setPlan({...plan,[c.id]:v})} ariaLabel={`Planned for ${c.name}`} title={`Planned monthly amount for ${c.name}`} />
+                </div>
+                <div>
+                  <div className="text-[11px] text-gray-500 mb-1">Actual</div>
+                  <CurrencyInput currency={currency} value={actuals[c.id]} onChange={(v)=>setActuals({...actuals,[c.id]:v})} ariaLabel={`Actual for ${c.name}`} title={`Actual spent for ${c.name}`} />
+                </div>
+              </div>
+              {String(c.id).startsWith('custom:') && (
+                <div className="mt-2 flex justify-end">
+                  <button className="text-xs text-red-600 inline-flex items-center gap-1" title="Delete row" onClick={()=>onDeleteCustom?.(c.id)}>
+                    <XMarkIcon className="w-3.5 h-3.5"/>
+                    <span>Delete</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
