@@ -1,4 +1,4 @@
-import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { HomeIcon, ClipboardDocumentListIcon, BanknotesIcon, Cog6ToothIcon, QuestionMarkCircleIcon, LinkIcon, PrinterIcon } from '@heroicons/react/24/outline'
 import Dashboard from './pages/Dashboard.jsx'
 import Incomes from './pages/Incomes.jsx'

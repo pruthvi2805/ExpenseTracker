@@ -86,7 +86,7 @@ export default function Settings() {
             <input type="file" accept="application/json" className="hidden" onChange={async(e)=>{
               const file = e.target.files?.[0]; if(!file) return;
               const txt = await file.text();
-              try { await importAll(JSON.parse(txt)); location.reload() } catch(err){ alert('Invalid backup file') }
+              try { await importAll(JSON.parse(txt)); location.reload() } catch { alert('Invalid backup file') }
             }} />
           </label>
           <p className="text-xs text-gray-500">Export creates a local file you can store safely. Import replaces your current data.</p>

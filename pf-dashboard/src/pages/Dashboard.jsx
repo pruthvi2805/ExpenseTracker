@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useMonth } from '../lib/monthContext.jsx'
+import { useMonth } from '../lib/useMonth.js'
 import { computeMonth } from '../lib/calc.js'
 import { on, Events } from '../lib/bus.js'
 import { Actuals, Plan } from '../lib/db.js'

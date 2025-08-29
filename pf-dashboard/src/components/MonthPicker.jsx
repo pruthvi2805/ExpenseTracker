@@ -1,4 +1,5 @@
-import { useMonth, nextMonthKey, prevMonthKey } from '../lib/monthContext.jsx'
+import { useMonth } from '../lib/useMonth.js'
+import { nextMonthKey, prevMonthKey } from '../lib/monthUtils.js'
 
 export function MonthPicker() {
   const { monthKey, setMonthKey } = useMonth()

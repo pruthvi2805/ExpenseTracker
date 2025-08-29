@@ -1,16 +1,29 @@
 #!/usr/bin/env bash
 
-# Block pushes to protected branches locally.
-protected_branches=("main" "master")
+# Block pushes targeting protected remote branches, regardless of current branch.
+protected_branches=("refs/heads/main" "refs/heads/master")
 
-current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-for b in "${protected_branches[@]}"; do
-  if [ "$current_branch" = "$b" ]; then
-    echo "✖ Push to '$b' is blocked by local hook. Create a feature branch and open a PR."
-    echo "  Example: git switch -c feat/short-description && git push -u origin HEAD"
-    exit 1
-  fi
+remote="$1"
+url="$2"
+
+block=false
+
+# Read ref updates from stdin: "<local ref> <local sha> <remote ref> <remote sha>"
+while read -r local_ref local_sha remote_ref remote_sha; do
+  for b in "${protected_branches[@]}"; do
+    if [[ "$remote_ref" == "$b" ]]; then
+      block=true
+      target="$b"
+      break 2
+    fi
+  done
 done
 
-exit 0
+if [ "$block" = true ]; then
+  echo "✖ Push to '${target#refs/heads/}' is blocked by local hook."
+  echo "  Create a feature branch and open a PR instead."
+  echo "  Example: git switch -c feat/short-description && git push -u origin HEAD"
+  exit 1
+fi
 
+exit 0

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Income, IncomeTotals, Settings as SettingsStore } from '../lib/db.js'
 import CurrencyInput from '../components/CurrencyInput.jsx'
 import { BanknotesIcon } from '@heroicons/react/24/outline'
-import { useMonth } from '../lib/monthContext.jsx'
+import { useMonth } from '../lib/useMonth.js'
 import { emit, Events } from '../lib/bus.js'
 
 export default function Incomes() {
@@ -11,8 +11,7 @@ export default function Incomes() {
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState(null)
   const [currency, setCurrency] = useState('EUR')
-  const [form, setForm] = useState({ source: 'Salary', amount: '', notes: '' })
-  const [error, setError] = useState('')
+  // Simplified totals view; individual income entry form removed
 
   const load = async () => {
     const legacy = await Income.byMonth(monthKey)
@@ -58,28 +57,7 @@ export default function Incomes() {
     emit(Events.DataChanged)
   }
 
-  async function copyLastMonth(){
-    const [y,m] = monthKey.split('-').map(Number)
-    const prev = new Date(y, m-2, 1)
-    const prevKey = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`
-    const prevItems = await Income.byMonth(prevKey)
-    for (const it of prevItems){
-      await Income.create({ monthKey, source: it.source, amount: it.amount, notes: it.notes })
-    }
-    await load(); emit(Events.DataChanged)
-  }
-
-  async function remove(id) {
-    await Income.remove(id); await load(); emit(Events.DataChanged)
-  }
-
-  async function update(id, patch) {
-    setError('')
-    try {
-      if (patch.amount != null) patch.amount = Number(patch.amount)
-      await Income.update(id, patch); await load(); emit(Events.DataChanged)
-    } catch (err) { setError(err.message) }
-  }
+  // Legacy per-entry functions removed in favour of totals editing
 
   return (
     <div className="space-y-4">

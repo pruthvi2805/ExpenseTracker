@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useMonth } from '../lib/monthContext.jsx'
+import { useMonth } from '../lib/useMonth.js'
 import { Plan as PlanStore, Actuals as ActualsStore, Settings as SettingsStore, CustomCats } from '../lib/db.js'
 import { ArrowUturnLeftIcon, SparklesIcon, TrashIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { leaves as taxLeaves } from '../lib/taxonomy.js'
@@ -60,7 +60,7 @@ export default function Budget(){
       const OLD_KEY = 'pf-budget-hideZero'
       localStorage.setItem(NEW_KEY, JSON.stringify(hideZero))
       if (localStorage.getItem(OLD_KEY)) localStorage.removeItem(OLD_KEY)
-    } catch {}
+    } catch (e) { void e }
   }, [hideZero])
 
   const fixedCats = cats.filter(c=> (c.section? c.section==='fixed' : !c.variable) && c.parentId !== 'loans')
@@ -69,8 +69,7 @@ export default function Budget(){
   const sum = (obj, list) => list.reduce((a,c)=> a + Number(obj[c.id]||0), 0)
   const plannedFixed = sum(plan, fixedCats), plannedVar = sum(plan, variableCats)
   const actualFixed = sum(actuals, fixedCats), actualVar = sum(actuals, variableCats)
-  const plannedTotal = plannedFixed + plannedVar
-  const actualTotal = actualFixed + actualVar
+  // Totals by section are displayed below; overall totals are computed on the fly
 
   function copyLastMonth(){
     try {
@@ -84,7 +83,7 @@ export default function Budget(){
         for (const c of target){ next[c.id] = p.data?.[c.id] || 0 }
         setPlan(next)
       })
-    } catch {}
+    } catch (e) { void e }
   }
 
   function prefillFromPlanFor(catsList){
@@ -212,7 +211,6 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
             const p = Number(plan[c.id]||0)
             const a = Number(actuals[c.id]||0)
             const d = Number((a-p).toFixed(2))
-            const cls = d>0? 'text-red-600' : d<0? 'text-emerald-600' : 'text-gray-600'
             const near = p>0 && a>=0.8*p && a<p
             const chip = d>0? 'bg-red-100 text-red-700' : d<0? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
             return (
