@@ -66,7 +66,11 @@ export default function Incomes() {
           <h2 className="font-semibold inline-flex items-center gap-2"><BanknotesIcon className="w-5 h-5"/>Income</h2>
           <span className={`text-xs ${saving?'text-gray-500':'text-emerald-600'}`}>{saving ? 'Saving…' : (savedAt ? 'All changes saved' : '')}</span>
         </div>
+<<<<<<< HEAD
         <p className="text-xs text-gray-600 mb-2">Enter monthly income per source. Leave blank for zero. Tip: Monthly totals override any individual income entries you may have recorded before.</p>
+=======
+        <p className="text-xs text-gray-600 mb-2">Enter monthly income per source. Leave blank for zero.</p>
+>>>>>>> origin/main
         {/* Desktop/tablet table */}
         <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
         <table className="min-w-[560px] w-full text-sm table-auto">

@@ -276,7 +276,7 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
           const bad = isAlloc ? (a<p ? true : false) : (d>0)
           const chip = bad? 'bg-red-100 text-red-700' : good? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
           return (
-            <div key={c.id} className={`py-2 ${d>0?'bg-red-50':near?'bg-amber-50':''}`}>
+            <div key={c.id} className={`py-2 ${(!isAlloc && d>0)?'bg-red-50':(!isAlloc && near)?'bg-amber-50':''}`}>
               <div className="flex items-start justify-between">
                 <div className="font-medium pr-2">{c.name}</div>
                 <div className="text-xs"><span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span></div>
