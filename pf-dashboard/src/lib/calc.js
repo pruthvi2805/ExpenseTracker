@@ -1,5 +1,6 @@
 import { Income, Plan, Settings, Actuals, CustomCats, IncomeTotals } from './db.js'
 import { leaves as taxLeaves, isVariableByLeafId, isAllocationByLeafId, allocationAffectsCash } from './taxonomy.js'
+import { Decimal } from 'decimal.js'
 
 export async function computeMonth(monthKey) {
   const [incomes, incomeTotals, actualsObj, planObj, settings, customCats] = await Promise.all([
@@ -17,12 +18,12 @@ export async function computeMonth(monthKey) {
       .map((c) => [c.id, c])
   )
 
-  let incomeTotal = 0
+  let incomeTotal = new Decimal(0)
   const totalsData = incomeTotals?.data || {}
   if (Object.keys(totalsData).length) {
-    incomeTotal = sum(Object.values(totalsData).map((v)=> Number(v?.amount || v || 0)))
+    incomeTotal = sum(Object.values(totalsData).map((v) => new Decimal(v?.amount || v || 0)))
   } else {
-    incomeTotal = sum(incomes.map((i) => i.amount))
+    incomeTotal = sum(incomes.map((i) => new Decimal(i.amount)))
   }
   const actuals = actualsObj.data || {}
   const getSection = (id) => {
@@ -30,97 +31,97 @@ export async function computeMonth(monthKey) {
     if (c && c.section) return c.section
     return isVariableByLeafId(id) ? 'variable' : 'fixed'
   }
-  let expenseFixed = 0, expenseVariable = 0, expenseLoans = 0
-  let allocationsActual = 0, allocationsCashOut = 0
+  let expenseFixed = new Decimal(0), expenseVariable = new Decimal(0), expenseLoans = new Decimal(0)
+  let allocationsActual = new Decimal(0), allocationsCashOut = new Decimal(0)
   for (const [id, v] of Object.entries(actuals)) {
-    const n = Number(v) || 0
+    const n = new Decimal(v || 0)
     const sec = getSection(id)
-    if (sec === 'variable') expenseVariable += n
-    else if (sec === 'loans') expenseLoans += n
-    else if (sec === 'allocations') { allocationsActual += n; if (allocationAffectsCash(id)) allocationsCashOut += n }
-    else expenseFixed += n
+    if (sec === 'variable') expenseVariable = expenseVariable.plus(n)
+    else if (sec === 'loans') expenseLoans = expenseLoans.plus(n)
+    else if (sec === 'allocations') { allocationsActual = allocationsActual.plus(n); if (allocationAffectsCash(id)) allocationsCashOut = allocationsCashOut.plus(n) }
+    else expenseFixed = expenseFixed.plus(n)
   }
-  const expenseTotal = round2(expenseFixed + expenseVariable + expenseLoans)
-  const netCash = round2(incomeTotal - expenseTotal - allocationsCashOut)
-  let plannedFixed = 0, plannedVariable = 0, plannedLoans = 0, plannedAllocations = 0, plannedAllocationsCashOut = 0
+  const expenseTotal = expenseFixed.plus(expenseVariable).plus(expenseLoans)
+  const netCash = incomeTotal.minus(expenseTotal).minus(allocationsCashOut)
+  let plannedFixed = new Decimal(0), plannedVariable = new Decimal(0), plannedLoans = new Decimal(0), plannedAllocations = new Decimal(0), plannedAllocationsCashOut = new Decimal(0)
   for (const [id, v] of Object.entries(planObj.data||{})){
-    const n = Number(v)||0
+    const n = new Decimal(v||0)
     const sec = getSection(id)
-    if (sec==='variable') plannedVariable += n
-    else if (sec==='loans') plannedLoans += n
-    else if (sec==='allocations') { plannedAllocations += n; if (allocationAffectsCash(id)) plannedAllocationsCashOut += n }
-    else plannedFixed += n
+    if (sec==='variable') plannedVariable = plannedVariable.plus(n)
+    else if (sec==='loans') plannedLoans = plannedLoans.plus(n)
+    else if (sec==='allocations') { plannedAllocations = plannedAllocations.plus(n); if (allocationAffectsCash(id)) plannedAllocationsCashOut = plannedAllocationsCashOut.plus(n) }
+    else plannedFixed = plannedFixed.plus(n)
   }
-  const plannedTotal = round2(plannedFixed + plannedVariable + plannedLoans)
-  const rawOverspend = expenseTotal - plannedTotal
-  const rawOverspendFixed = expenseFixed - plannedFixed
-  const rawOverspendVariable = expenseVariable - plannedVariable
-  const rawOverspendLoans = expenseLoans - plannedLoans
+  const plannedTotal = plannedFixed.plus(plannedVariable).plus(plannedLoans)
+  const rawOverspend = expenseTotal.minus(plannedTotal)
+  const rawOverspendFixed = expenseFixed.minus(plannedFixed)
+  const rawOverspendVariable = expenseVariable.minus(plannedVariable)
+  const rawOverspendLoans = expenseLoans.minus(plannedLoans)
 
-  const overspend = round2(Math.max(0, rawOverspend))
-  const overspendFixed = round2(Math.max(0, rawOverspendFixed))
-  const overspendVariable = round2(Math.max(0, rawOverspendVariable))
-  const overspendLoans = round2(Math.max(0, rawOverspendLoans))
+  const overspend = Decimal.max(0, rawOverspend)
+  const overspendFixed = Decimal.max(0, rawOverspendFixed)
+  const overspendVariable = Decimal.max(0, rawOverspendVariable)
+  const overspendLoans = Decimal.max(0, rawOverspendLoans)
 
-  const underspend = round2(Math.max(0, plannedTotal - expenseTotal))
-  const underspendFixed = round2(Math.max(0, plannedFixed - expenseFixed))
-  const underspendVariable = round2(Math.max(0, plannedVariable - expenseVariable))
-  const underspendLoans = round2(Math.max(0, plannedLoans - expenseLoans))
+  const underspend = Decimal.max(0, plannedTotal.minus(expenseTotal))
+  const underspendFixed = Decimal.max(0, plannedFixed.minus(expenseFixed))
+  const underspendVariable = Decimal.max(0, plannedVariable.minus(expenseVariable))
+  const underspendLoans = Decimal.max(0, plannedLoans.minus(expenseLoans))
 
   // Signed deltas (Actual minus Plan). Positive = overspend, Negative = under plan.
-  const deltaTotal = round2(expenseTotal - plannedTotal)
-  const deltaFixed = round2(expenseFixed - plannedFixed)
-  const deltaVariable = round2(expenseVariable - plannedVariable)
-  const deltaLoans = round2(expenseLoans - plannedLoans)
-  const allocationsDelta = round2(allocationsActual - plannedAllocations)
-  const savingsNow = Number(settings.currentSavings || 0)
-  const savingsMin = Number(settings.minSavings || 0)
-  const savingsAfterCash = round2(savingsNow + netCash)
-  const savingsOk = savingsAfterCash >= savingsMin
+  const deltaTotal = expenseTotal.minus(plannedTotal)
+  const deltaFixed = expenseFixed.minus(plannedFixed)
+  const deltaVariable = expenseVariable.minus(plannedVariable)
+  const deltaLoans = expenseLoans.minus(plannedLoans)
+  const allocationsDelta = allocationsActual.minus(plannedAllocations)
+  const savingsNow = new Decimal(settings.currentSavings || 0)
+  const savingsMin = new Decimal(settings.minSavings || 0)
+  const savingsAfterCash = savingsNow.plus(netCash)
+  const savingsOk = savingsAfterCash.greaterThanOrEqualTo(savingsMin)
 
   // Breakdown by category for dashboard convenience
   const byCategoryId = { ...actuals }
-  const spendByCategoryId = Object.fromEntries(Object.entries(actuals).filter(([id])=>!isAllocationByLeafId(id)))
+  const spendByCategoryId = Object.fromEntries(Object.entries(actuals).filter(([id])=>!isAllocationByLeafId(id)).map(([k,v]) => [k, new Decimal(v||0).toDecimalPlaces(2).toNumber()]))
   
   return {
     monthKey,
-    incomeTotal,
-    expenseTotal, // consumption only (excludes allocations)
-    expenseFixed,
-    expenseVariable,
-    expenseLoans,
-    netCash,
-    plannedTotal, // consumption only
-    plannedFixed,
-    plannedVariable,
-    plannedLoans,
-    plannedAllocations,
-    plannedAllocationsCashOut,
-    allocationsActual,
-    allocationsCashOut,
-    overspend,
-    overspendFixed,
-    overspendVariable,
-    overspendLoans,
-    underspend,
-    underspendFixed,
-    underspendVariable,
-    underspendLoans,
-    deltaTotal,
-    deltaFixed,
-    deltaVariable,
-    deltaLoans,
-    allocationsDelta,
-    savingsAfterCash,
+    incomeTotal: incomeTotal.toNumber(),
+    expenseTotal: expenseTotal.toNumber(), // consumption only (excludes allocations)
+    expenseFixed: expenseFixed.toNumber(),
+    expenseVariable: expenseVariable.toNumber(),
+    expenseLoans: expenseLoans.toNumber(),
+    netCash: netCash.toNumber(),
+    plannedTotal: plannedTotal.toNumber(), // consumption only
+    plannedFixed: plannedFixed.toNumber(),
+    plannedVariable: plannedVariable.toNumber(),
+    plannedLoans: plannedLoans.toNumber(),
+    plannedAllocations: plannedAllocations.toNumber(),
+    plannedAllocationsCashOut: plannedAllocationsCashOut.toNumber(),
+    allocationsActual: allocationsActual.toNumber(),
+    allocationsCashOut: allocationsCashOut.toNumber(),
+    overspend: overspend.toNumber(),
+    overspendFixed: overspendFixed.toNumber(),
+    overspendVariable: overspendVariable.toNumber(),
+    overspendLoans: overspendLoans.toNumber(),
+    underspend: underspend.toNumber(),
+    underspendFixed: underspendFixed.toNumber(),
+    underspendVariable: underspendVariable.toNumber(),
+    underspendLoans: underspendLoans.toNumber(),
+    deltaTotal: deltaTotal.toNumber(),
+    deltaFixed: deltaFixed.toNumber(),
+    deltaVariable: deltaVariable.toNumber(),
+    deltaLoans: deltaLoans.toNumber(),
+    allocationsDelta: allocationsDelta.toNumber(),
+    savingsAfterCash: savingsAfterCash.toNumber(),
     savingsOk,
-    savingsMin,
-    savingsNow,
+    savingsMin: savingsMin.toNumber(),
+    savingsNow: savingsNow.toNumber(),
     currency: settings.currency || 'USD',
-    byCategoryId,
-    spendByCategoryId,
+    byCategoryId: Object.fromEntries(Object.entries(actuals).map(([k,v]) => [k, new Decimal(v||0).toDecimalPlaces(2).toNumber()])),
+    spendByCategoryId: Object.fromEntries(Object.entries(actuals).filter(([id])=>!isAllocationByLeafId(id)).map(([k,v]) => [k, new Decimal(v||0).toDecimalPlaces(2).toNumber()])),
     categoryMap
   }
 }
 
-function sum(arr) { return round2(arr.reduce((a, b) => a + (Number(b) || 0), 0)) }
+function sum(arr) { return arr.reduce((a, b) => a.plus(new Decimal(b || 0)), new Decimal(0)) }
 function round2(n) { return Number((Math.round((n + Number.EPSILON) * 100) / 100).toFixed(2)) }
