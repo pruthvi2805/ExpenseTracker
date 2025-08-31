@@ -6,6 +6,7 @@ import { Actuals, Plan } from '../lib/db.js'
 import { isAllocationByLeafId } from '../lib/taxonomy.js'
 import { BanknotesIcon, CalendarDaysIcon, ReceiptPercentIcon, ArrowTrendingUpIcon, InformationCircleIcon, ChartPieIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Plan as PlanStore } from '../lib/db.js'
+import Decimal from 'decimal.js'
 
 export default function Dashboard() {
   const { monthKey } = useMonth()
@@ -48,7 +49,7 @@ export default function Dashboard() {
     { label: 'Income', value: money(data.incomeTotal, data.currency), icon: <BanknotesIcon className="w-5 h-5"/>, title: 'Sum of monthly income totals (or itemized incomes if totals are blank).'},
     { label: 'Planned Spend', value: money(data.plannedTotal, data.currency), icon: <CalendarDaysIcon className="w-5 h-5"/>, title: 'Planned consumption only (Fixed, Variable, Loans). Allocations excluded.' },
     { label: 'Spend', value: money(data.expenseTotal, data.currency), icon: <ReceiptPercentIcon className="w-5 h-5"/>, title: 'Actual consumption only (Fixed, Variable, Loans). Allocations excluded.' },
-    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: data.netCash >= 0 ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${data.netCash>=0?'text-emerald-600':'text-red-600'}`} />, title: 'Income − Spend − Investment contributions (cash‑reducing allocations).'},
+    { label: 'Net Cash', value: money(data.netCash, data.currency), cls: new Decimal(data.netCash).greaterThanOrEqualTo(0) ? 'text-emerald-600' : 'text-red-600', icon: <ArrowTrendingUpIcon className={`w-5 h-5 ${new Decimal(data.netCash).greaterThanOrEqualTo(0)?'text-emerald-600':'text-red-600'}`} />, title: 'Income − Spend − Investment contributions (cash‑reducing allocations).'},
   ]
 
 
@@ -97,20 +98,20 @@ export default function Dashboard() {
             <h2 className="font-semibold">Budget Status</h2>
             <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>Actual − Plan by section (Allocations shown separately; higher is better)</span>
           </div>
-          {data.deltaTotal > 0 && (
+          {new Decimal(data.deltaTotal).greaterThan(0) && (
             <p className="text-sm text-red-600">Overbudget: <b>{money(data.deltaTotal, data.currency)}</b></p>
           )}
-          {data.deltaTotal < 0 && (
-            <p className="text-sm text-emerald-600">Underbudget: <b>{money(-data.deltaTotal, data.currency)}</b></p>
+          {new Decimal(data.deltaTotal).lessThan(0) && (
+            <p className="text-sm text-emerald-600">Underbudget: <b>{money(new Decimal(data.deltaTotal).abs(), data.currency)}</b></p>
           )}
-          {data.deltaTotal === 0 && (
+          {new Decimal(data.deltaTotal).equals(0) && (
             <p className="text-sm text-gray-600">On plan</p>
           )}
           <div className="mt-1 text-xs">
             <p className={`${clsDelta(data.deltaFixed)}`}>Fixed: <b>{fmtDelta(data.deltaFixed, data.currency)}</b></p>
             <p className={`${clsDelta(data.deltaVariable)}`}>Variable: <b>{fmtDelta(data.deltaVariable, data.currency)}</b></p>
             <p className={`${clsDelta(data.deltaLoans)}`}>Loans: <b>{fmtDelta(data.deltaLoans, data.currency)}</b></p>
-            <p className={`mt-1 ${data.allocationsDelta>=0?'text-emerald-600':'text-red-600'}`}>Allocations: <b>{data.allocationsDelta>=0?'+':''}{money(data.allocationsDelta, data.currency)}</b> (higher is better)</p>
+            <p className={`mt-1 ${new Decimal(data.allocationsDelta).greaterThanOrEqualTo(0)?'text-emerald-600':'text-red-600'}`}>Allocations: <b>{new Decimal(data.allocationsDelta).greaterThanOrEqualTo(0)?'+':''}{money(data.allocationsDelta, data.currency)}</b> (higher is better)</p>
           </div>
         </div>
       </div>
@@ -122,10 +123,10 @@ export default function Dashboard() {
         </div>
         <div className="space-y-1 text-sm">
           {(() => {
-            const remaining = Math.max(0, Number((data.plannedTotal - data.expenseTotal).toFixed(2)))
+            const remaining = Decimal.max(0, new Decimal(data.plannedTotal).minus(data.expenseTotal))
             const items = []
-            const savingsShort = Math.max(0, Number((data.savingsMin - data.savingsAfterCash).toFixed(2)))
-            if (savingsShort > 0) {
+            const savingsShort = Decimal.max(0, new Decimal(data.savingsMin).minus(data.savingsAfterCash))
+            if (savingsShort.greaterThan(0)) {
               items.push(
                 <p key="savings" className="text-red-600">You are {money(savingsShort, data.currency)} below your minimum savings. Reduce spend or cut investment contributions by that amount to stay green.</p>
               )
@@ -133,8 +134,8 @@ export default function Dashboard() {
             items.push(
               <p key="left">Left to spend this month: <b>{money(remaining, data.currency)}</b></p>
             )
-            const needAlloc = Math.max(0, Number((data.plannedAllocations - data.allocationsActual).toFixed(2)))
-            if (needAlloc > 0) {
+            const needAlloc = Decimal.max(0, new Decimal(data.plannedAllocations).minus(data.allocationsActual))
+            if (needAlloc.greaterThan(0)) {
               items.push(
                 <p key="alloc" className="text-gray-700">To meet your Allocations plan, set aside {money(needAlloc, data.currency)} more.</p>
               )
@@ -163,21 +164,21 @@ export default function Dashboard() {
 }
 
 function money(v, currency = 'USD') {
-  const n = Number(v || 0)
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n)
+  const n = new Decimal(v || 0)
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n.toDecimalPlaces(2).toNumber())
 }
 
 function fmtDelta(v, currency){
-  const n = Number(v||0)
-  if (n === 0) return money(0, currency)
-  const sign = n > 0 ? '' : '-'
-  return sign + money(Math.abs(n), currency)
+  const n = new Decimal(v||0)
+  if (n.equals(0)) return money(0, currency)
+  const sign = n.greaterThan(0) ? '' : '-'
+  return sign + money(n.abs(), currency)
 }
 
 function clsDelta(v){
-  const n = Number(v||0)
-  if (n > 0) return 'text-red-600'
-  if (n < 0) return 'text-emerald-600'
+  const n = new Decimal(v||0)
+  if (n.greaterThan(0)) return 'text-red-600'
+  if (n.lessThan(0)) return 'text-emerald-600'
   return 'text-gray-600'
 }
 
@@ -224,8 +225,8 @@ function Trends({ monthKey, currency }){
         </thead>
         <tbody className="divide-y divide-gray-100">
           {rows.map(r => {
-            const delta = Number((r.actual - r.planned).toFixed(2))
-            const over = delta > 0, under = delta < 0
+            const delta = new Decimal(r.actual).minus(r.planned)
+            const over = delta.greaterThan(0), under = delta.lessThan(0)
             const chip = over ? 'bg-red-100 text-red-700' : under ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
             const label = over ? 'Overbudget' : under ? 'Underbudget' : 'On plan'
             return (
@@ -256,16 +257,16 @@ function CollapsibleCategories({ data }){
   const [open, setOpen] = useState(false)
   const entries = Object.entries(data.spendByCategoryId)
   const colors = ['#6366f1','#22c55e','#f59e0b','#ef4444','#06b6d4','#a855f7','#84cc16','#f97316']
-  const total = entries.reduce((s,[,v])=> s + Number(v||0), 0)
-  let current = 0
+  const total = entries.reduce((s,[,v])=> new Decimal(s).plus(v||0), new Decimal(0))
+  let current = new Decimal(0)
   const stops = entries.map(([cid,amt],i)=>{
-    const val = Number(amt||0)
-    const deg = total>0 ? (val/total)*360 : 0
+    const val = new Decimal(amt||0)
+    const deg = total.greaterThan(0) ? val.dividedBy(total).times(360) : new Decimal(0)
     const start = current
-    current += deg
-    return {cid, start, end: current, color: colors[i%colors.length], value: val}
+    current = current.plus(deg)
+    return {cid, start: start.toNumber(), end: current.toNumber(), color: colors[i%colors.length], value: val.toNumber()}
   })
-  const gradient = (stops.length && total>0)
+  const gradient = (stops.length && total.greaterThan(0))
     ? `conic-gradient(${stops.map(s=>`${s.color} ${s.start}deg ${s.end}deg`).join(',')})`
     : 'conic-gradient(#e5e7eb 0deg 360deg)'
   return (
