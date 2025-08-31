@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
+import { CURRENCIES } from '../lib/constants.js'
+import Decimal from 'decimal.js'
 
-export default function CurrencyInput({ currency='EUR', value, onChange, ariaLabel, title, className='' }){
+export default function CurrencyInput({ currency=CURRENCIES.EUR, value, onChange, ariaLabel, title, className='', disabled=false }){
   const [invalid, setInvalid] = useState(false)
 
   const re = useMemo(()=>/^\d*(?:\.\d{0,2})?$/,[])
@@ -14,9 +16,9 @@ export default function CurrencyInput({ currency='EUR', value, onChange, ariaLab
   function handleBlur(e){
     const v = e.target.value
     if (v === '' || invalid) return
-    const n = Number(v)
-    if (!isFinite(n) || n < 0) { setInvalid(true); return }
-    const fixed = n.toFixed(2)
+    const n = new Decimal(v)
+    if (!n.isFinite() || n.lessThan(0)) { setInvalid(true); return }
+    const fixed = n.toDecimalPlaces(2).toString()
     onChange?.(fixed)
   }
 
@@ -32,6 +34,7 @@ export default function CurrencyInput({ currency='EUR', value, onChange, ariaLab
         value={value ?? ''}
         onChange={handleChange}
         onBlur={handleBlur}
+        disabled={disabled}
       />
     </div>
   )
