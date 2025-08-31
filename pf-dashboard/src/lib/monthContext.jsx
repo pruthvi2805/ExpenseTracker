@@ -1,14 +1,15 @@
 import { useMemo, useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { MonthContext } from './monthStore.js'
+import { LOCAL_STORAGE_KEYS, DATE_FORMATS } from './constants.js'
 
 export function MonthProvider({ children }) {
   const now = new Date()
-  const defaultMonthKey = format(now, 'yyyy-MM')
-  const [monthKey, setMonthKey] = useState(() => localStorage.getItem('pf-month') || defaultMonthKey)
+  const defaultMonthKey = format(now, DATE_FORMATS.MONTH_KEY)
+  const [monthKey, setMonthKey] = useState(() => localStorage.getItem(LOCAL_STORAGE_KEYS.MONTH_KEY) || defaultMonthKey)
 
   useEffect(() => {
-    localStorage.setItem('pf-month', monthKey)
+    localStorage.setItem(LOCAL_STORAGE_KEYS.MONTH_KEY, monthKey)
   }, [monthKey])
 
   const value = useMemo(() => ({ monthKey, setMonthKey }), [monthKey])
