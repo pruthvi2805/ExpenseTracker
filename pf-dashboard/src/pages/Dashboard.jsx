@@ -87,7 +87,7 @@ export default function Dashboard() {
         <div className="tile">
           <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
             <h2 className="font-semibold">Savings</h2>
-            <span className="text-[11px] text-gray-500">ⓘ Current + Net Cash = After Month (Cash)</span>
+            <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>Current + Net Cash = After Month (Cash)</span>
           </div>
           <p className="text-sm">Current savings: <b>{money(data.savingsNow, data.currency)}</b></p>
           <p className="text-sm">After Month (Cash): <b className={data.savingsOk ? 'text-emerald-600' : 'text-red-600'}>{money(data.savingsAfterCash, data.currency)}</b> (minimum {money(data.savingsMin, data.currency)})</p>

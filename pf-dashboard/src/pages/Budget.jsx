@@ -52,7 +52,7 @@ export default function Budget(){
       setSaving(false)
     }, 500)
     return () => timer.current && clearTimeout(timer.current)
-  }, [plan, actuals])
+  }, [plan, actuals, cats.length, monthKey])
 
   // Persist hideZero preference
   useEffect(() => {

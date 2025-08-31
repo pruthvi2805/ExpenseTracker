@@ -89,6 +89,7 @@ export default function Help() {
         <li><b>Start small</b>: A simple Plan (Fixed + a few Variable buckets) goes a long way. You can refine later.</li>
         <li><b>Separate predictable vs flexible</b>: Fixed for bills, Loans for repayments, Variable for everything that changes.</li>
         <li><b>Understand deltas</b>: Δ is <i>Actual − Plan</i>. Red = <b>Overbudget</b>; Green = <b>Underbudget</b>.</li>
+        <li><b>Updates</b>: If a new version ships, you’ll see a small banner — click <b>Refresh</b> to switch instantly.</li>
         <li><b>When in doubt</b>: Open Dashboard → Budget Status to see exactly where differences come from.</li>
         <li><b>Offline & private</b>: Everything stays in your browser. Export a backup before clearing browser data.</li>
       </ul>
