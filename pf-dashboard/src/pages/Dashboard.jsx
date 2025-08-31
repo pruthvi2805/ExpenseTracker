@@ -123,6 +123,8 @@ export default function Dashboard() {
         <div className="space-y-1 text-sm">
           {(() => {
             const remaining = Math.max(0, Number((data.plannedTotal - data.expenseTotal).toFixed(2)))
+            const daysLeft = computeDaysLeft(monthKey)
+            const perDay = remaining > 0 ? remaining / Math.max(1, daysLeft) : 0
             const items = []
             const savingsShort = Math.max(0, Number((data.savingsMin - data.savingsAfterCash).toFixed(2)))
             if (savingsShort > 0) {
@@ -131,7 +133,11 @@ export default function Dashboard() {
               )
             }
             items.push(
-              <p key="left">Left to spend this month: <b>{money(remaining, data.currency)}</b></p>
+              <p key="left">
+                Left to spend this month: <b>{money(remaining, data.currency)}</b>{remaining>0 && (
+                  <span> • ≈ <b>{money(perDay, data.currency)}</b> per day ({daysLeft} days)</span>
+                )}
+              </p>
             )
             const needAlloc = Math.max(0, Number((data.plannedAllocations - data.allocationsActual).toFixed(2)))
             if (needAlloc > 0) {
@@ -181,7 +187,18 @@ function clsDelta(v){
   return 'text-gray-600'
 }
 
-// per-day guidance removed by design for simplicity
+function computeDaysLeft(monthKey){
+  try {
+    const [y,m] = monthKey.split('-').map(Number)
+    const last = new Date(y, m, 0)
+    const today = new Date()
+    if (today.getFullYear()===y && (today.getMonth()+1)===m){
+      const left = last.getDate() - today.getDate() + 1
+      return Math.max(1, left)
+    }
+    return last.getDate()
+  } catch { return 30 }
+}
 
 function Trends({ monthKey, currency }){
   const [rows, setRows] = useState([])
