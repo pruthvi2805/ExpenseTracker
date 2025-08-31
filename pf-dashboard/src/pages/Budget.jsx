@@ -6,6 +6,7 @@ import { leaves as taxLeaves, isAllocationByLeafId } from '../lib/taxonomy.js'
 import PageHeader from '../components/PageHeader.jsx'
 import { showToast } from '../lib/toast.js'
 import CurrencyInput from '../components/CurrencyInput.jsx'
+import Decimal from 'decimal.js'
 
 export default function Budget(){
   const { monthKey } = useMonth()
@@ -68,9 +69,9 @@ export default function Budget(){
   const loanCats = cats.filter(c=> c.section==='loans')
   const variableCats = cats.filter(c=> c.section==='variable')
   const allocationCats = cats.filter(c=> c.section==='allocations')
-  const sum = (obj, list) => list.reduce((a,c)=> a + Number(obj[c.id]||0), 0)
-  const plannedFixed = sum(plan, fixedCats), plannedVar = sum(plan, variableCats)
-  const actualFixed = sum(actuals, fixedCats), actualVar = sum(actuals, variableCats)
+  const sum = (obj, list) => list.reduce((a,c)=> a.plus(new Decimal(obj[c.id]||0)), new Decimal(0))
+  const plannedFixed = sum(plan, fixedCats).toNumber(), plannedVar = sum(plan, variableCats).toNumber()
+  const actualFixed = sum(actuals, fixedCats).toNumber(), actualVar = sum(actuals, variableCats).toNumber()
   // Totals by section are displayed below; overall totals are computed on the fly
 
   function copyLastMonth(){
@@ -185,16 +186,16 @@ export default function Budget(){
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">
           {active==='fixed' && (<>
-            Plan <b>{money(plannedFixed,currency)}</b> • Actual <b>{money(actualFixed,currency)}</b> • Δ <b>{money(actualFixed-plannedFixed,currency)}</b>
+            Plan <b>{money(plannedFixed,currency)}</b> • Actual <b>{money(actualFixed,currency)}</b> • Δ <b>{money(new Decimal(actualFixed).minus(plannedFixed),currency)}</b>
           </>)}
           {active==='variable' && (<>
-            Plan <b>{money(plannedVar,currency)}</b> • Actual <b>{money(actualVar,currency)}</b> • Δ <b>{money(actualVar-plannedVar,currency)}</b>
+            Plan <b>{money(plannedVar,currency)}</b> • Actual <b>{money(actualVar,currency)}</b> • Δ <b>{money(new Decimal(actualVar).minus(plannedVar),currency)}</b>
           </>)}
           {active==='loans' && (<>
-            Plan <b>{money(sum(plan, loanCats),currency)}</b> • Actual <b>{money(sum(actuals, loanCats),currency)}</b> • Δ <b>{money(sum(actuals, loanCats)-sum(plan, loanCats),currency)}</b>
+            Plan <b>{money(sum(plan, loanCats),currency)}</b> • Actual <b>{money(sum(actuals, loanCats),currency)}</b> • Δ <b>{money(sum(actuals, loanCats).minus(sum(plan, loanCats)),currency)}</b>
           </>)}
           {active==='allocations' && (<>
-            Planned <b>{money(sum(plan, allocationCats),currency)}</b> • Actual <b>{money(sum(actuals, allocationCats),currency)}</b> • Progress <b className={`${(sum(actuals, allocationCats) >= sum(plan, allocationCats))?'text-emerald-600':'text-red-600'}`}>{sum(actuals, allocationCats) >= sum(plan, allocationCats) ? 'On/Above plan' : 'Below plan'}</b>
+            Planned <b>{money(sum(plan, allocationCats),currency)}</b> • Actual <b>{money(sum(actuals, allocationCats),currency)}</b> • Progress <b className={`${(sum(actuals, allocationCats).greaterThanOrEqualTo(sum(plan, allocationCats)))?'text-emerald-600':'text-red-600'}`}>{sum(actuals, allocationCats).greaterThanOrEqualTo(sum(plan, allocationCats)) ? 'On/Above plan' : 'Below plan'}</b>
           </>)}
         </div>
         <div className="flex gap-2">
@@ -240,18 +241,18 @@ function Section({ title, monthKey, cats, currency, plan, setPlan, actuals, setA
         </thead>
         <tbody className="divide-y divide-gray-100">
           {cats.length===0 && <tr><td colSpan="5" className="text-center text-gray-500 py-4">No categories</td></tr>}
-          {(hideZero ? cats.filter(c=> (Number(plan[c.id]||0)>0) || (Number(actuals[c.id]||0)>0)) : cats).map(c=>{
-            const p = Number(plan[c.id]||0)
-            const a = Number(actuals[c.id]||0)
-            const d = Number((a-p).toFixed(2))
+          {(hideZero ? cats.filter(c=> (new Decimal(plan[c.id]||0).greaterThan(0)) || (new Decimal(actuals[c.id]||0).greaterThan(0))) : cats).map(c=>{
+            const p = new Decimal(plan[c.id]||0)
+            const a = new Decimal(actuals[c.id]||0)
+            const d = a.minus(p)
             const isAlloc = allocations || isAllocationByLeafId(c.id)
-            const near = !isAlloc && p>0 && a>=0.8*p && a<p
-            const good = isAlloc ? (a>=p ? true : false) : (d<0)
-            const bad = isAlloc ? (a<p ? true : false) : (d>0)
+            const near = !isAlloc && p.greaterThan(0) && a.greaterThanOrEqualTo(p.times(0.8)) && a.lessThan(p)
+            const good = isAlloc ? (a.greaterThanOrEqualTo(p) ? true : false) : (d.lessThan(0))
+            const bad = isAlloc ? (a.lessThan(p) ? true : false) : (d.greaterThan(0))
             const chip = bad? 'bg-red-100 text-red-700' : good? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
             return (
               <>
-              <tr key={c.id} className={`${(!isAlloc && d>0)?'bg-red-50':(!isAlloc && near)?'bg-amber-50':'even:bg-gray-50'}`}>
+              <tr key={c.id} className={`${(!isAlloc && d.greaterThan(0))?'bg-red-50':(!isAlloc && near)?'bg-amber-50':'even:bg-gray-50'}`}>
                 <td className="py-1.5 px-2 pr-3">{c.name}</td>
                 <td className="text-right pr-3">
                   <CurrencyInput currency={currency} value={plan[c.id]} onChange={(v)=>setPlan({...plan,[c.id]:v})} ariaLabel={`Planned for ${c.name}`} title={`Planned monthly amount for ${c.name}`} />
@@ -260,7 +261,7 @@ function Section({ title, monthKey, cats, currency, plan, setPlan, actuals, setA
                   <CurrencyInput currency={currency} value={actuals[c.id]} onChange={(v)=>setActuals({...actuals,[c.id]:v})} ariaLabel={`Actual for ${c.name}`} title={`Actual spent for ${c.name}`} />
                 </td>
                 <td className="text-right hidden sm:table-cell">
-                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span>
+                  <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${chip}`}>{isAlloc ? `${a.greaterThanOrEqualTo(p)?'+':''}${money(a.minus(p),currency)}` : money(d.abs(),currency)}</span>
                   {String(c.id).startsWith('custom:') && (
                     <button className="ml-2 text-xs text-red-600 inline-flex items-center gap-1" title="Delete row" onClick={()=>onDeleteCustom?.(c.id)}>
                       <XMarkIcon className="w-3.5 h-3.5"/>
@@ -272,7 +273,7 @@ function Section({ title, monthKey, cats, currency, plan, setPlan, actuals, setA
               {/* Mobile-only delta chip under the row */}
               <tr className="sm:hidden">
                 <td className="py-1 px-2 text-right text-xs text-gray-600" colSpan="3">
-                  <span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span>
+                  <span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a.greaterThanOrEqualTo(p)?'+':''}${money(a.minus(p),currency)}` : money(d.abs(),currency)}</span>
                 </td>
               </tr>
               </>
@@ -285,20 +286,20 @@ function Section({ title, monthKey, cats, currency, plan, setPlan, actuals, setA
       {/* Mobile cards */}
       <div className="sm:hidden divide-y divide-gray-100">
         {cats.length===0 && <div className="text-center text-gray-500 py-4">No categories</div>}
-        {(hideZero ? cats.filter(c=> (Number(plan[c.id]||0)>0) || (Number(actuals[c.id]||0)>0)) : cats).map(c=>{
-          const p = Number(plan[c.id]||0)
-          const a = Number(actuals[c.id]||0)
-          const d = Number((a-p).toFixed(2))
+          {(hideZero ? cats.filter(c=> (new Decimal(plan[c.id]||0).greaterThan(0)) || (new Decimal(actuals[c.id]||0).greaterThan(0))) : cats).map(c=>{
+          const p = new Decimal(plan[c.id]||0)
+          const a = new Decimal(actuals[c.id]||0)
+          const d = a.minus(p)
           const isAlloc = allocations || isAllocationByLeafId(c.id)
-          const near = !isAlloc && p>0 && a>=0.8*p && a<p
-          const good = isAlloc ? (a>=p ? true : false) : (d<0)
-          const bad = isAlloc ? (a<p ? true : false) : (d>0)
+          const near = !isAlloc && p.greaterThan(0) && a.greaterThanOrEqualTo(p.times(0.8)) && a.lessThan(p)
+          const good = isAlloc ? (a.greaterThanOrEqualTo(p) ? true : false) : (d.lessThan(0))
+          const bad = isAlloc ? (a.lessThan(p) ? true : false) : (d.greaterThan(0))
           const chip = bad? 'bg-red-100 text-red-700' : good? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'
           return (
-            <div key={c.id} className={`py-2 ${(!isAlloc && d>0)?'bg-red-50':(!isAlloc && near)?'bg-amber-50':''}`}>
+            <div key={c.id} className={`py-2 ${(!isAlloc && d.greaterThan(0))?'bg-red-50':(!isAlloc && near)?'bg-amber-50':''}`}>
               <div className="flex items-start justify-between">
                 <div className="font-medium pr-2">{c.name}</div>
-                <div className="text-xs"><span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a>=p?'+':''}${money(a-p,currency)}` : money(Math.abs(d),currency)}</span></div>
+                <div className="text-xs"><span className={`inline-block rounded-full px-2 py-0.5 ${chip}`}>{isAlloc ? `${a.greaterThanOrEqualTo(p)?'+':''}${money(a.minus(p),currency)}` : money(d.abs(),currency)}</span></div>
               </div>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <div>
@@ -329,13 +330,13 @@ function Section({ title, monthKey, cats, currency, plan, setPlan, actuals, setA
 function normalize(d){
   const res = {}
   for (const [k,v] of Object.entries(d)){
-    const n = Number(v)
-    if (isFinite(n) && n>0) res[k] = Number(n.toFixed(2))
+    const n = new Decimal(v)
+    if (n.isFinite() && n.greaterThan(0)) res[k] = n.toDecimalPlaces(2).toNumber()
   }
   return res
 }
 
-function money(v,currency='EUR'){ const n=Number(v||0); return new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n) }
+function money(v,currency='EUR'){ const n=new Decimal(v||0); return new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n.toDecimalPlaces(2).toNumber()) }
 
 function infoFor(title){
   if (title==='Fixed') return 'Predictable monthly bills (rent, utilities, insurance)'
@@ -346,16 +347,21 @@ function infoFor(title){
 }
 
 function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations=false }){
-  const sum = (obj, list) => list.reduce((a,c)=> a + Number(obj[c.id]||0), 0)
+  const sum = (obj, list) => list.reduce((a,c)=> a.plus(new Decimal(obj[c.id]||0)), new Decimal(0))
   const p = sum(plan, cats)
   const a = sum(actuals, cats)
-  const remaining = p - a
-  const money = (v)=> new Intl.NumberFormat(undefined,{style:'currency',currency}).format(Number(v||0))
-  const cls = (!allocations ? (remaining>=0 ? 'text-gray-700' : 'text-red-600') : (remaining<=0 ? 'text-emerald-600' : 'text-gray-700'))
-  const label = !allocations ? (remaining>=0 ? 'Remaining' : 'Overspent') : (remaining<=0 ? 'Plan met' : 'To allocate')
+  const remaining = p.minus(a)
+  const daysLeft = computeDaysLeft(monthKey)
+  const perDay = remaining.greaterThan(0) ? remaining.dividedBy(Decimal.max(1, daysLeft)) : new Decimal(0)
+  const money = (v)=> new Intl.NumberFormat(undefined,{style:'currency',currency}).format(new Decimal(v||0).toDecimalPlaces(2).toNumber())
+  const cls = (!allocations ? (remaining.greaterThanOrEqualTo(0) ? 'text-gray-700' : 'text-red-600') : (remaining.lessThanOrEqualTo(0) ? 'text-emerald-600' : 'text-gray-700'))
+  const label = !allocations ? (remaining.greaterThanOrEqualTo(0) ? 'Remaining' : 'Overspent') : (remaining.lessThanOrEqualTo(0) ? 'Plan met' : 'To allocate')
   const tip = !allocations
     ? 'Remaining = Plan − Actual. If negative, you are overspent.'
     : 'To allocate = Plan − Actual. Plan met when Actual ≥ Plan.'
+  const tipPerDay = !allocations
+    ? 'Left per day = Remaining ÷ days left this month.'
+    : 'Per day to hit plan = To allocate ÷ days left this month.'
   return (
     <div className="mb-2 -mx-2 sm:mx-0">
       <div className="rounded bg-indigo-50 border border-indigo-100 px-2 py-1.5 text-xs flex flex-wrap items-center gap-3">
@@ -366,9 +372,34 @@ function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations
         <span className={cls}>
           {label}
           <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tip} aria-label={tip} />
-          <b>{money(Math.abs(remaining))}</b>
+          <b>{money(remaining.abs())}</b>
         </span>
+        {(!allocations && remaining.greaterThan(0)) && (
+          <span className="text-gray-600">• Left per day
+            <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tipPerDay} aria-label={tipPerDay} />
+            <b>{money(perDay)}</b> ({daysLeft} days)
+          </span>
+        )}
+        {(allocations && remaining.greaterThan(0)) && (
+          <span className="text-gray-600">• Per day to hit plan
+            <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tipPerDay} aria-label={tipPerDay} />
+            <b>{money(perDay)}</b> ({daysLeft} days)
+          </span>
+        )}
       </div>
     </div>
   )
+}
+
+function computeDaysLeft(monthKey){
+  try {
+    const [y,m] = monthKey.split('-').map(Number)
+    const last = new Date(y, m, 0) // last day of month
+    const today = new Date()
+    if (today.getFullYear()===y && (today.getMonth()+1)===m){
+      const left = last.getDate() - today.getDate() + 1
+      return Math.max(1, left)
+    }
+    return last.getDate()
+  } catch { return 30 }
 }
