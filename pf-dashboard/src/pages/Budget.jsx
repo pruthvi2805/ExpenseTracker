@@ -7,6 +7,9 @@ import PageHeader from '../components/PageHeader.jsx'
 import { showToast } from '../lib/toast.js'
 import CurrencyInput from '../components/CurrencyInput.jsx'
 import Decimal from 'decimal.js'
+import { money, computeDaysLeft, sumNumbers } from '../lib/utils.js'
+import { LOCAL_STORAGE_KEYS, CATEGORY_SECTIONS, NUMERIC_CONSTANTS } from '../lib/constants.js'
+import { sum } from '../lib/calc.js' // The Decimal-aware sum function
 
 export default function Budget(){
   const { monthKey } = useMonth()
@@ -16,13 +19,13 @@ export default function Budget(){
   const [currency, setCurrency] = useState('EUR')
   const [saving, setSaving] = useState(false)
   const timer = useRef(null)
-  const [active, setActive] = useState(()=> new URLSearchParams(location.search).get('tab') || localStorage.getItem('pf-budget-tab') || 'fixed')
+  const [active, setActive] = useState(()=> new URLSearchParams(location.search).get('tab') || localStorage.getItem(LOCAL_STORAGE_KEYS.BUDGET_TAB) || CATEGORY_SECTIONS.FIXED)
   const [newName, setNewName] = useState('')
   const [newErr, setNewErr] = useState('')
   const [hideZero, setHideZero] = useState(() => {
     try {
-      const NEW_KEY = 'pf-hideEmptyRows'
-      const OLD_KEY = 'pf-budget-hideZero'
+      const NEW_KEY = LOCAL_STORAGE_KEYS.HIDE_EMPTY_ROWS
+      const OLD_KEY = LOCAL_STORAGE_KEYS.LEGACY_HIDE_ZERO
       const rawNew = localStorage.getItem(NEW_KEY)
       const rawOld = localStorage.getItem(OLD_KEY)
       const parsed = rawNew ? JSON.parse(rawNew) : (rawOld ? JSON.parse(rawOld) : null)
@@ -51,25 +54,24 @@ export default function Budget(){
         ActualsStore.set(monthKey, normalize(actuals))
       ])
       setSaving(false)
-    }, 500)
+    }, NUMERIC_CONSTANTS.SAVE_DEBOUNCE_MS)
     return () => timer.current && clearTimeout(timer.current)
   }, [plan, actuals, cats.length, monthKey])
 
   // Persist hideZero preference
   useEffect(() => {
     try {
-      const NEW_KEY = 'pf-hideEmptyRows'
-      const OLD_KEY = 'pf-budget-hideZero'
+      const NEW_KEY = LOCAL_STORAGE_KEYS.HIDE_EMPTY_ROWS
+      const OLD_KEY = LOCAL_STORAGE_KEYS.LEGACY_HIDE_ZERO
       localStorage.setItem(NEW_KEY, JSON.stringify(hideZero))
       if (localStorage.getItem(OLD_KEY)) localStorage.removeItem(OLD_KEY)
     } catch (e) { void e }
   }, [hideZero])
 
-  const fixedCats = cats.filter(c=> c.section==='fixed')
-  const loanCats = cats.filter(c=> c.section==='loans')
-  const variableCats = cats.filter(c=> c.section==='variable')
-  const allocationCats = cats.filter(c=> c.section==='allocations')
-  const sum = (obj, list) => list.reduce((a,c)=> a.plus(new Decimal(obj[c.id]||0)), new Decimal(0))
+  const fixedCats = cats.filter(c=> c.section===CATEGORY_SECTIONS.FIXED)
+  const loanCats = cats.filter(c=> c.section===CATEGORY_SECTIONS.LOANS)
+  const variableCats = cats.filter(c=> c.section===CATEGORY_SECTIONS.VARIABLE)
+  const allocationCats = cats.filter(c=> c.section===CATEGORY_SECTIONS.ALLOCATIONS)
   const plannedFixed = sum(plan, fixedCats).toNumber(), plannedVar = sum(plan, variableCats).toNumber()
   const actualFixed = sum(actuals, fixedCats).toNumber(), actualVar = sum(actuals, variableCats).toNumber()
   // Totals by section are displayed below; overall totals are computed on the fly
@@ -116,7 +118,7 @@ export default function Budget(){
     }})
   }
 
-  function changeTab(t){ setActive(t); localStorage.setItem('pf-budget-tab', t) }
+  function changeTab(t){ setActive(t); localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_TAB, t) }
 
   async function addCustom(){
     const name = newName.trim()
@@ -336,24 +338,20 @@ function normalize(d){
   return res
 }
 
-function money(v,currency='EUR'){ const n=new Decimal(v||0); return new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n.toDecimalPlaces(2).toNumber()) }
-
 function infoFor(title){
-  if (title==='Fixed') return 'Predictable monthly bills (rent, utilities, insurance)'
-  if (title==='Variable') return 'Day‑to‑day flexible costs (groceries, dining, transport)'
-  if (title==='Loans') return 'Loan repayments (car, personal, other)'
-  if (title==='Allocations') return 'Savings transfer (cash→cash) and investment contribution (cash→investments). Not counted as spend.'
+  if (title===CATEGORY_SECTIONS.FIXED) return 'Predictable monthly bills (rent, utilities, insurance)'
+  if (title===CATEGORY_SECTIONS.VARIABLE) return 'Day‑to‑day flexible costs (groceries, dining, transport)'
+  if (title===CATEGORY_SECTIONS.LOANS) return 'Loan repayments (car, personal, other)'
+  if (title===CATEGORY_SECTIONS.ALLOCATIONS) return 'Savings transfer (cash→cash) and investment contribution (cash→investments). Not counted as spend.'
   return ''
 }
 
 function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations=false }){
-  const sum = (obj, list) => list.reduce((a,c)=> a.plus(new Decimal(obj[c.id]||0)), new Decimal(0))
   const p = sum(plan, cats)
   const a = sum(actuals, cats)
   const remaining = p.minus(a)
   const daysLeft = computeDaysLeft(monthKey)
-  const perDay = remaining.greaterThan(0) ? remaining.dividedBy(Decimal.max(1, daysLeft)) : new Decimal(0)
-  const money = (v)=> new Intl.NumberFormat(undefined,{style:'currency',currency}).format(new Decimal(v||0).toDecimalPlaces(2).toNumber())
+  const perDay = remaining.greaterThan(0) ? remaining.dividedBy(Decimal.max(new Decimal(1), new Decimal(daysLeft))) : new Decimal(0)
   const cls = (!allocations ? (remaining.greaterThanOrEqualTo(0) ? 'text-gray-700' : 'text-red-600') : (remaining.lessThanOrEqualTo(0) ? 'text-emerald-600' : 'text-gray-700'))
   const label = !allocations ? (remaining.greaterThanOrEqualTo(0) ? 'Remaining' : 'Overspent') : (remaining.lessThanOrEqualTo(0) ? 'Plan met' : 'To allocate')
   const tip = !allocations
@@ -389,17 +387,4 @@ function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations
       </div>
     </div>
   )
-}
-
-function computeDaysLeft(monthKey){
-  try {
-    const [y,m] = monthKey.split('-').map(Number)
-    const last = new Date(y, m, 0) // last day of month
-    const today = new Date()
-    if (today.getFullYear()===y && (today.getMonth()+1)===m){
-      const left = last.getDate() - today.getDate() + 1
-      return Math.max(1, left)
-    }
-    return last.getDate()
-  } catch { return 30 }
 }

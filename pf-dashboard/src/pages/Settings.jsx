@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Settings as SettingsStore, exportAll, importAll } from '../lib/db.js'
+import { Settings as SettingsStore, exportAll, importAll, Plan as PlanStore, Actuals as ActualsStore, IncomeTotals } from '../lib/db.js'
 import { showToast } from '../lib/toast.js'
 import { emit, Events } from '../lib/bus.js'
 import { Cog6ToothIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
 import { useMonth } from '../lib/useMonth.js'
-import { Plan as PlanStore, Actuals as ActualsStore } from '../lib/db.js'
-import { leaves as taxLeaves } from '../lib/taxonomy.js'
+import { LOCAL_STORAGE_KEYS, NUMERIC_CONSTANTS, CURRENCIES } from '../lib/constants.js'
+// import { leaves as taxLeaves } from '../lib/taxonomy.js' // Unused
 
 export default function Settings() {
   const { monthKey } = useMonth()
@@ -25,7 +25,7 @@ export default function Settings() {
       currentSavings: Number(s.currentSavings),
       startMonth: s.startMonth || null
     })
-    setSaved(true); setTimeout(()=>setSaved(false), 1500)
+    setSaved(true); setTimeout(()=>setSaved(false), NUMERIC_CONSTANTS.SAVED_MESSAGE_DURATION_MS)
     emit(Events.SettingsChanged); emit(Events.DataChanged)
   }
 
@@ -37,20 +37,17 @@ export default function Settings() {
           <div>
             <label className="block text-xs text-gray-500">Currency</label>
             <select className="select" value={s.currency} onChange={(e)=>setS({...s,currency:e.target.value})}>
-            <option value="EUR">EUR — Euro</option>
-            <option value="USD">USD — US Dollar</option>
-            <option value="GBP">GBP — British Pound</option>
-            <option value="INR">INR — Indian Rupee</option>
-            <option value="AUD">AUD — Australian Dollar</option>
-            <option value="CAD">CAD — Canadian Dollar</option>
+            {Object.entries(CURRENCIES).map(([code, name]) => (
+              <option key={code} value={code}>{code} — {name}</option>
+            ))}
           </select>
             <p className="text-[11px] text-gray-500 mt-1">Controls symbols and formatting across the app.</p>
           </div>
           <div>
             <label className="block text-xs text-gray-500">Salary Day</label>
-            <input type="number" min="1" max="28" step="1" className="input" value={s.salaryDay} onChange={(e)=>{
+            <input type="number" min={NUMERIC_CONSTANTS.SALARY_DAY_MIN} max={NUMERIC_CONSTANTS.SALARY_DAY_MAX} step="1" className="input" value={s.salaryDay} onChange={(e)=>{
             const v = Number(e.target.value)
-            if (Number.isNaN(v)) return; if (v<1||v>28) return; setS({...s,salaryDay:v})
+            if (Number.isNaN(v)) return; if (v<NUMERIC_CONSTANTS.SALARY_DAY_MIN||v>NUMERIC_CONSTANTS.SALARY_DAY_MAX) return; setS({...s,salaryDay:v})
           }} />
             <p className="text-[11px] text-gray-500 mt-1">Optional reference day (reserved for future reminders).</p>
           </div>
@@ -96,31 +93,35 @@ export default function Settings() {
                 await importAll(JSON.parse(txt));
                 showToast({ message: 'Imported backup', actionLabel: 'Undo', onAction: async()=>{ await importAll(before); location.reload() } })
                 location.reload()
-              } catch { alert('Invalid backup file') }
+              } catch (error) {
+                console.error("Import error:", error);
+                showToast({ message: 'Invalid backup file', type: 'error' });
+              }
             }} />
           </label>
-          <button className="btn" onClick={async()=>{
-            // Export CSV for current month: Category, Section, Planned, Actual, Delta
-            const [p,a] = await Promise.all([PlanStore.get(monthKey), ActualsStore.get(monthKey)])
-            const leaves = taxLeaves()
-            const map = Object.fromEntries(leaves.map(l=>[l.id,l]))
-            const rows = [['Category','Section','Planned','Actual','Delta']]
-            const ids = new Set([...Object.keys(p.data||{}), ...Object.keys(a.data||{})])
-            for (const id of ids){
-              const info = map[id]
-              if (!info) continue
-              const planned = Number(p.data?.[id]||0)
-              const actual = Number(a.data?.[id]||0)
-              const delta = Number((actual - planned).toFixed(2))
-              rows.push([info.name, info.section, planned.toFixed(2), actual.toFixed(2), delta.toFixed(2)])
-            }
-            const csv = rows.map(r=> r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n')
-            const blob = new Blob([csv],{type:'text/csv'})
-            const url = URL.createObjectURL(blob)
-            const ael = document.createElement('a')
-            ael.href = url; ael.download = `pf-${monthKey}.csv`; ael.click(); URL.revokeObjectURL(url)
-          }}>Export CSV (this month)</button>
-          <p className="text-xs text-gray-500">Export creates a local file you can store safely. Import replaces your current data. CSV export uses the selected month on the header.</p>
+          <p className="text-xs text-gray-500">Export creates a local file you can store safely. Import replaces your current data.</p>
+        </div>
+      </div>
+
+      <div className="tile">
+        <h3 className="font-semibold mb-2">Debugging</h3>
+        <div className="flex items-center gap-3 flex-wrap">
+          <button className="btn" onClick={()=>{
+            if (!confirm('Clear all settings?')) return
+            SettingsStore.set({}).then(()=>location.reload())
+          }}>Clear Settings</button>
+          <button className="btn" onClick={()=>{
+            if (!confirm('Clear all month data (plans, actuals, incomes)?')) return
+            Promise.all([
+              PlanStore.clear(monthKey),
+              ActualsStore.clear(monthKey),
+              IncomeTotals.clear(monthKey),
+            ]).then(()=>location.reload())
+          }}>Clear Current Month Data</button>
+          <button className="btn" onClick={()=>{
+            if (!confirm('Clear EVERYTHING (all data across all months, custom categories)?')) return
+            importAll({}, { merge: false }).then(()=>location.reload())
+          }}>Clear All Data</button>
         </div>
       </div>
     </div>

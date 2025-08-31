@@ -6,7 +6,9 @@ import { Actuals, Plan } from '../lib/db.js'
 import { isAllocationByLeafId } from '../lib/taxonomy.js'
 import { BanknotesIcon, CalendarDaysIcon, ReceiptPercentIcon, ArrowTrendingUpIcon, InformationCircleIcon, ChartPieIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import { Plan as PlanStore } from '../lib/db.js'
-import Decimal from 'decimal.js'
+import { money, fmtDelta, clsDelta, computeDaysLeft } from '../lib/utils.js'
+import { LOCAL_STORAGE_KEYS } from '../lib/constants.js'
+import Decimal from 'decimal.js' // Ensure Decimal is imported for local usage if any
 
 export default function Dashboard() {
   const { monthKey } = useMonth()
@@ -33,9 +35,9 @@ export default function Dashboard() {
         const prevKey = `${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`
         const curPlan = await PlanStore.get(monthKey)
         const prevPlan = await PlanStore.get(prevKey)
-        const empty = Object.values(curPlan.data||{}).every(v=>Number(v||0)===0)
-        const nonEmptyPrev = Object.values(prevPlan.data||{}).some(v=>Number(v||0)>0)
-        const seen = localStorage.getItem(`pf-rollover:${monthKey}`)
+        const empty = Object.values(curPlan.data||{}).every(v=>new Decimal(v||0).equals(0))
+        const nonEmptyPrev = Object.values(prevPlan.data||{}).some(v=>new Decimal(v||0).greaterThan(0))
+        const seen = localStorage.getItem(`${LOCAL_STORAGE_KEYS.ROLLOVER_SEEN}:${monthKey}`)
         if (mounted && empty && nonEmptyPrev && !seen) setRollover({ prevKey })
       } catch { /* no-op */ }
     }
@@ -75,7 +77,7 @@ export default function Dashboard() {
               <button className="btn-primary" onClick={async()=>{
                   const p = await PlanStore.get(rollover.prevKey)
                   await PlanStore.set(monthKey, p.data||{})
-                  localStorage.setItem(`pf-rollover:${monthKey}`,'1')
+                  localStorage.setItem(`${LOCAL_STORAGE_KEYS.ROLLOVER_SEEN}:${monthKey}`,'1')
                   emit(Events.DataChanged)
                   setRollover(null)
               }}>Copy plan</button>
@@ -162,27 +164,6 @@ export default function Dashboard() {
     </div>
   )
 }
-
-function money(v, currency = 'USD') {
-  const n = new Decimal(v || 0)
-  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(n.toDecimalPlaces(2).toNumber())
-}
-
-function fmtDelta(v, currency){
-  const n = new Decimal(v||0)
-  if (n.equals(0)) return money(0, currency)
-  const sign = n.greaterThan(0) ? '' : '-'
-  return sign + money(n.abs(), currency)
-}
-
-function clsDelta(v){
-  const n = new Decimal(v||0)
-  if (n.greaterThan(0)) return 'text-red-600'
-  if (n.lessThan(0)) return 'text-emerald-600'
-  return 'text-gray-600'
-}
-
-// per-day guidance removed by design for simplicity
 
 function Trends({ monthKey, currency }){
   const [rows, setRows] = useState([])

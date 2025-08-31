@@ -5,6 +5,8 @@ import { BanknotesIcon } from '@heroicons/react/24/outline'
 import { useMonth } from '../lib/useMonth.js'
 import { emit, Events } from '../lib/bus.js'
 import Decimal from 'decimal.js'
+import { LOCAL_STORAGE_KEYS } from '../lib/constants.js'
+import { money } from '../lib/utils.js'
 
 export default function Incomes() {
   const { monthKey } = useMonth()
@@ -164,6 +166,7 @@ export default function Incomes() {
                     title={`Enter monthly amount for ${r.label} in ${currency}`}
                   />
                 </div>
+                {/* Notes field moved to below the amount for mobile */}
                 <div>
                   <div className="text-[11px] text-gray-500 mb-1">Notes</div>
                   <input
@@ -188,5 +191,3 @@ export default function Incomes() {
     </div>
   )
 }
-
-function money(v,currency='EUR'){ const n=Number(v||0); return new Intl.NumberFormat(undefined,{style:'currency',currency}).format(n) }
