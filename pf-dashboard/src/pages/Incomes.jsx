@@ -4,6 +4,7 @@ import CurrencyInput from '../components/CurrencyInput.jsx'
 import { BanknotesIcon } from '@heroicons/react/24/outline'
 import { useMonth } from '../lib/useMonth.js'
 import { emit, Events } from '../lib/bus.js'
+import Decimal from 'decimal.js'
 
 export default function Incomes() {
   const { monthKey } = useMonth()
@@ -26,13 +27,13 @@ export default function Incomes() {
     ]
     const rows = base.map(b => ({
       ...b,
-      amount: totals.data?.[b.id]?.amount ?? '',
+      amount: totals.data?.[b.id]?.amount ?? new Decimal(0),
       notes: totals.data?.[b.id]?.notes ?? ''
     }))
     // If no totals yet and legacy exists, prefill sums once
     if (!Object.keys(totals.data||{}).length && legacy.length){
       const sums = {
-        salary: 0, rent: 0, reimbursements: 0, investments: 0, other: 0
+        salary: new Decimal(0), rent: new Decimal(0), reimbursements: new Decimal(0), investments: new Decimal(0), other: new Decimal(0)
       }
       for (const it of legacy){
         const key = it.source?.toLowerCase().includes('salary') ? 'salary'
@@ -40,9 +41,9 @@ export default function Incomes() {
           : it.source?.toLowerCase().includes('reimb') ? 'reimbursements'
           : (it.source?.toLowerCase().includes('invest') || it.source?.toLowerCase().includes('dividend') || it.source?.toLowerCase().includes('interest')) ? 'investments'
           : 'other'
-        sums[key] += Number(it.amount)||0
+        sums[key] = sums[key].plus(new Decimal(it.amount||0))
       }
-      rows.forEach(r=> r.amount = sums[r.id] ? sums[r.id].toFixed(2) : '')
+      rows.forEach(r=> r.amount = sums[r.id].greaterThan(0) ? sums[r.id].toDecimalPlaces(2).toString() : new Decimal(0).toDecimalPlaces(2).toString())
     }
     setItems(rows)
   }
@@ -51,7 +52,14 @@ export default function Incomes() {
 
   async function saveTotals(mapping){
     setSaving(true)
-    await IncomeTotals.set(monthKey, mapping)
+    // Convert amounts to Decimal before saving
+    const dataToSave = Object.fromEntries(
+      Object.entries(mapping).map(([id, { amount, notes }]) => [
+        id,
+        { amount: new Decimal(amount || 0).toDecimalPlaces(2).toNumber(), notes }
+      ])
+    );
+    await IncomeTotals.set(monthKey, dataToSave)
     setSaving(false)
     setSavedAt(Date.now())
     emit(Events.DataChanged)
