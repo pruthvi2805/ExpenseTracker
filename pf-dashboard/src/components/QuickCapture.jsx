@@ -5,6 +5,8 @@ import { Actuals as ActualsStore, Settings as SettingsStore, CustomCats } from '
 import { leaves as taxLeaves, labelFor } from '../lib/taxonomy.js'
 import CurrencyInput from './CurrencyInput.jsx'
 import { emit, Events } from '../lib/bus.js'
+import { LOCAL_STORAGE_KEYS, NUMERIC_CONSTANTS } from '../lib/constants.js'
+import Decimal from 'decimal.js'
 
 export default function QuickCapture(){
   const [open, setOpen] = useState(false)
@@ -66,14 +68,14 @@ function QuickCaptureModal({ onClose }){
   function pick(id){ setCatId(id) }
 
   async function save(){
-    const n = Number(amount)
-    if (!isFinite(n) || n<=0) return
+    const n = new Decimal(amount || 0)
+    if (!n.isFinite() || n.lessThanOrEqualTo(0)) return
     if (!catId) return
     setSaving(true)
     try {
       const cur = await ActualsStore.get(monthKey)
       const data = { ...(cur.data||{}) }
-      data[catId] = Number(data[catId]||0) + Number(n.toFixed(2))
+      data[catId] = new Decimal(data[catId]||0).plus(n).toDecimalPlaces(2).toNumber()
       await ActualsStore.set(monthKey, data)
       pushRecent(catId)
       emit(Events.DataChanged)
@@ -130,12 +132,12 @@ function QuickCaptureModal({ onClose }){
 }
 
 function getRecents(){
-  try { return JSON.parse(localStorage.getItem('pf-recents')||'[]') } catch { return [] }
+  try { return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.QUICK_CAPTURE_RECENT)||'[]') } catch { return [] }
 }
 function pushRecent(id){
   try {
     const list = getRecents().filter(x=>x!==id)
     list.unshift(id)
-    localStorage.setItem('pf-recents', JSON.stringify(list.slice(0,10)))
+    localStorage.setItem(LOCAL_STORAGE_KEYS.QUICK_CAPTURE_RECENT, JSON.stringify(list.slice(0,NUMERIC_CONSTANTS.RECENT_MAX)))
   } catch { /* no-op */ }
 }
