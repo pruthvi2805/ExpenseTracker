@@ -4,6 +4,7 @@ import { Plan as PlanStore, Actuals as ActualsStore, Settings as SettingsStore, 
 import { ArrowUturnLeftIcon, SparklesIcon, TrashIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { leaves as taxLeaves, isAllocationByLeafId } from '../lib/taxonomy.js'
 import PageHeader from '../components/PageHeader.jsx'
+import { showToast } from '../lib/toast.js'
 import CurrencyInput from '../components/CurrencyInput.jsx'
 
 export default function Budget(){
@@ -99,8 +100,19 @@ export default function Budget(){
     const target = lists[active] || []
     const nextPlan = { ...plan }
     const nextActuals = { ...actuals }
+    const snapshot = {
+      plan: Object.fromEntries(target.map(c=>[c.id, plan[c.id]||0])),
+      actuals: Object.fromEntries(target.map(c=>[c.id, actuals[c.id]||0]))
+    }
     for (const c of target){ nextPlan[c.id] = 0; nextActuals[c.id] = 0 }
     setPlan(nextPlan); setActuals(nextActuals)
+    showToast({ message: 'Cleared rows', actionLabel: 'Undo', onAction: ()=>{
+      const restoredPlan = { ...nextPlan }
+      const restoredActuals = { ...nextActuals }
+      for (const [k,v] of Object.entries(snapshot.plan)) restoredPlan[k] = v
+      for (const [k,v] of Object.entries(snapshot.actuals)) restoredActuals[k] = v
+      setPlan(restoredPlan); setActuals(restoredActuals)
+    }})
   }
 
   function changeTab(t){ setActive(t); localStorage.setItem('pf-budget-tab', t) }
@@ -117,8 +129,14 @@ export default function Budget(){
   async function maybeDeleteCustom(id){
     const zero = (n)=> Number(n||0)===0
     if (zero(plan[id]) && zero(actuals[id])){
+      const toRemove = cats.find(c=>c.id===id)
       await CustomCats.remove(id)
       setCats(cats.filter(c=>c.id!==id))
+      showToast({ message: `Deleted "${toRemove?.name||'Custom'}"`, actionLabel: 'Undo', onAction: async()=>{
+        // Re-add with same name under current active section
+        const item = await CustomCats.add(active, toRemove?.name || 'Custom')
+        setCats([...cats.filter(c=>c.id!==id), item])
+      } })
     }
   }
 
@@ -132,7 +150,7 @@ export default function Budget(){
         ))}
       </div>
       {active==='fixed' && (
-        <Section title="Fixed" cats={fixedCats} currency={currency}
+        <Section title="Fixed" monthKey={monthKey} cats={fixedCats} currency={currency}
           plan={plan} setPlan={setPlan} actuals={actuals} setActuals={setActuals}
           onDeleteCustom={maybeDeleteCustom}
           hideZero={hideZero.fixed}
@@ -140,7 +158,7 @@ export default function Budget(){
         />
       )}
       {active==='variable' && (
-        <Section title="Variable" cats={variableCats} currency={currency}
+        <Section title="Variable" monthKey={monthKey} cats={variableCats} currency={currency}
           plan={plan} setPlan={setPlan} actuals={actuals} setActuals={setActuals}
           onDeleteCustom={maybeDeleteCustom}
           hideZero={hideZero.variable}
@@ -148,7 +166,7 @@ export default function Budget(){
         />
       )}
       {active==='loans' && (
-        <Section title="Loans" cats={loanCats} currency={currency}
+        <Section title="Loans" monthKey={monthKey} cats={loanCats} currency={currency}
           plan={plan} setPlan={setPlan} actuals={actuals} setActuals={setActuals}
           onDeleteCustom={maybeDeleteCustom}
           hideZero={hideZero.loans}
@@ -156,7 +174,7 @@ export default function Budget(){
         />
       )}
       {active==='allocations' && (
-        <Section title="Allocations" cats={allocationCats} currency={currency}
+        <Section title="Allocations" monthKey={monthKey} cats={allocationCats} currency={currency}
           plan={plan} setPlan={setPlan} actuals={actuals} setActuals={setActuals}
           onDeleteCustom={maybeDeleteCustom}
           hideZero={false}
@@ -195,7 +213,7 @@ export default function Budget(){
   )
 }
 
-function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, onDeleteCustom, hideZero=false, onToggleHide, allocations=false }){
+function Section({ title, monthKey, cats, currency, plan, setPlan, actuals, setActuals, onDeleteCustom, hideZero=false, onToggleHide, allocations=false }){
   return (
     <div className="tile tile-tight">
       <div className="flex items-center justify-between pb-1 mb-2 border-b border-indigo-100">
@@ -208,6 +226,7 @@ function Section({ title, cats, currency, plan, setPlan, actuals, setActuals, on
           <span className="text-[11px] text-gray-500 inline-flex items-center gap-1"><InformationCircleIcon className="w-4 h-4"/>{infoFor(title)}</span>
         </div>
       </div>
+      <SectionTotalsBar monthKey={monthKey} cats={cats} currency={currency} plan={plan} actuals={actuals} allocations={allocations} />
       {/* Desktop/tablet table */}
       <div className="hidden sm:block overflow-x-auto -mx-2 sm:mx-0">
       <table className="min-w-[560px] w-full text-sm table-auto">
@@ -324,4 +343,62 @@ function infoFor(title){
   if (title==='Loans') return 'Loan repayments (car, personal, other)'
   if (title==='Allocations') return 'Savings transfer (cash→cash) and investment contribution (cash→investments). Not counted as spend.'
   return ''
+}
+
+function SectionTotalsBar({ monthKey, cats, currency, plan, actuals, allocations=false }){
+  const sum = (obj, list) => list.reduce((a,c)=> a + Number(obj[c.id]||0), 0)
+  const p = sum(plan, cats)
+  const a = sum(actuals, cats)
+  const remaining = p - a
+  const daysLeft = computeDaysLeft(monthKey)
+  const perDay = remaining>0 ? remaining / Math.max(1, daysLeft) : 0
+  const money = (v)=> new Intl.NumberFormat(undefined,{style:'currency',currency}).format(Number(v||0))
+  const cls = (!allocations ? (remaining>=0 ? 'text-gray-700' : 'text-red-600') : (remaining<=0 ? 'text-emerald-600' : 'text-gray-700'))
+  const label = !allocations ? (remaining>=0 ? 'Remaining' : 'Overspent') : (remaining<=0 ? 'Plan met' : 'To allocate')
+  const tip = !allocations
+    ? 'Remaining = Plan − Actual. If negative, you are overspent.'
+    : 'To allocate = Plan − Actual. Plan met when Actual ≥ Plan.'
+  const tipPerDay = !allocations
+    ? 'Left per day = Remaining ÷ days left this month.'
+    : 'Per day to hit plan = To allocate ÷ days left this month.'
+  return (
+    <div className="mb-2 -mx-2 sm:mx-0">
+      <div className="rounded bg-indigo-50 border border-indigo-100 px-2 py-1.5 text-xs flex flex-wrap items-center gap-3">
+        <span>Plan <b>{money(p)}</b></span>
+        <span>•</span>
+        <span>Actual <b>{money(a)}</b></span>
+        <span>•</span>
+        <span className={cls}>
+          {label}
+          <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tip} aria-label={tip} />
+          <b>{money(Math.abs(remaining))}</b>
+        </span>
+        {(!allocations && remaining>0) && (
+          <span className="text-gray-600">• Left per day
+            <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tipPerDay} aria-label={tipPerDay} />
+            <b>{money(perDay)}</b> ({daysLeft} days)
+          </span>
+        )}
+        {(allocations && remaining>0) && (
+          <span className="text-gray-600">• Per day to hit plan
+            <InformationCircleIcon className="inline w-3.5 h-3.5 mx-1 align-[-2px] text-gray-500" title={tipPerDay} aria-label={tipPerDay} />
+            <b>{money(perDay)}</b> ({daysLeft} days)
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function computeDaysLeft(monthKey){
+  try {
+    const [y,m] = monthKey.split('-').map(Number)
+    const last = new Date(y, m, 0) // last day of month
+    const today = new Date()
+    if (today.getFullYear()===y && (today.getMonth()+1)===m){
+      const left = last.getDate() - today.getDate() + 1
+      return Math.max(1, left)
+    }
+    return last.getDate()
+  } catch { return 30 }
 }
