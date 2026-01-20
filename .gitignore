@@ -1,12 +1,29 @@
-**/.DS_Store
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
 .DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
 
 # Environment files
 .env
+.env.local
 .env.*.local
 
-# Common tooling caches (optional)
+# Cache
 .eslintcache
 .vite
-coverage/
-docs/
