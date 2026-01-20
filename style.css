@@ -1,35 +1,443 @@
-/* Custom styles for Expense Tracker */
+/* ==================== CSS VARIABLES ==================== */
+:root {
+  /* Primary Colors - Terracotta */
+  --color-primary: #C17B5F;
+  --color-primary-dark: #A66248;
+  --color-primary-light: #D4967D;
 
-/* Tab active state */
+  /* Background Colors */
+  --color-bg: #FAFAF8;
+  --color-bg-secondary: #F5F5F3;
+  --color-bg-tertiary: #EEEEE9;
+  --color-bg-elevated: #FFFFFF;
+
+  /* Text Colors */
+  --color-text: #1A1A1A;
+  --color-text-secondary: #6B6B6B;
+  --color-text-tertiary: #888888;
+
+  /* Border Colors */
+  --color-border: #E8E6E3;
+  --color-border-hover: #D8D6D3;
+
+  /* Status Colors */
+  --color-success: #5A9A5A;
+  --color-warning: #D4A84B;
+  --color-error: #C75050;
+
+  /* Layout */
+  --header-height: 56px;
+  --max-width: 480px;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+  --color-primary: #D4967D;
+  --color-primary-dark: #C17B5F;
+  --color-primary-light: #E5B09A;
+
+  --color-bg: #1A1A1A;
+  --color-bg-secondary: #222222;
+  --color-bg-tertiary: #2A2A2A;
+  --color-bg-elevated: #252525;
+
+  --color-text: #F5F4F2;
+  --color-text-secondary: #A0A0A0;
+  --color-text-tertiary: #777777;
+
+  --color-border: #333333;
+  --color-border-hover: #444444;
+
+  --color-success: #70B070;
+  --color-warning: #E0B860;
+  --color-error: #E07070;
+}
+
+/* ==================== BASE STYLES ==================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  min-height: 100vh;
+  transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* Prevent transitions on page load */
+.no-transitions * {
+  transition: none !important;
+}
+
+/* ==================== HEADER ==================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 100;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.header__content {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+}
+
+/* Hub Link */
+.hub-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-text-tertiary);
+  border-radius: 6px;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.hub-link:hover {
+  color: var(--color-text);
+  background-color: var(--color-bg-secondary);
+}
+
+.hub-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Brand Badge */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(193, 123, 95, 0.25);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.brand:hover .brand-badge {
+  transform: scale(1.05);
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+@media (max-width: 400px) {
+  .brand-name {
+    display: none;
+  }
+}
+
+/* Theme Toggle */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text);
+  background-color: var(--color-bg-secondary);
+}
+
+.theme-toggle__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  position: relative;
+}
+
+.theme-toggle__icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  transition: all var(--transition-fast);
+}
+
+[data-theme="dark"] .theme-toggle__icon::before {
+  width: 14px;
+  height: 14px;
+  top: 2px;
+  left: 2px;
+  transform: none;
+}
+
+/* ==================== MAIN APP ==================== */
+#app {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: calc(var(--header-height) + 24px) 16px 100px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== ONBOARDING ==================== */
+#onboarding {
+  text-align: center;
+  padding: 48px 0;
+}
+
+#onboarding h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+#onboarding p {
+  color: var(--color-text-secondary);
+  margin-bottom: 32px;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#onboarding label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+#currency-select {
+  width: 100%;
+  max-width: 240px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text);
+  margin-bottom: 32px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+#currency-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+#get-started-btn {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+#get-started-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(193, 123, 95, 0.3);
+}
+
+/* ==================== MONTH NAVIGATION ==================== */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.month-nav button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.month-nav button:hover {
+  color: var(--color-text);
+  background-color: var(--color-bg-secondary);
+}
+
+#current-month {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ==================== SUMMARY CARDS ==================== */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.summary-card__label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+}
+
+.summary-card__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.summary-card__value--positive {
+  color: var(--color-success);
+}
+
+.summary-card__value--negative {
+  color: var(--color-error);
+}
+
+/* ==================== TAB NAVIGATION ==================== */
+.tab-nav {
+  display: flex;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--color-text-secondary);
+}
+
 .tab-btn.active {
-  background-color: white;
-  color: #1f2937;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.tab-btn:not(.active) {
-  color: #6b7280;
+/* ==================== CONTENT CARDS ==================== */
+.card {
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+  padding: 20px;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
-.tab-btn:not(.active):hover {
-  color: #374151;
+.card + .card {
+  margin-top: 16px;
 }
 
-/* Progress bar */
+.card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+/* ==================== PROGRESS BAR ==================== */
 .progress-bar {
   height: 8px;
   border-radius: 4px;
-  background-color: #e5e7eb;
+  background-color: var(--color-bg-secondary);
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transition: width var(--transition-base);
 }
 
-/* Category icons */
+/* ==================== CATEGORY ICON ==================== */
 .category-icon {
   width: 36px;
   height: 36px;
@@ -40,7 +448,62 @@
   flex-shrink: 0;
 }
 
-/* Form inputs */
+/* ==================== FORM STYLES ==================== */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.form-input--with-prefix {
+  padding-left: 28px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Remove number input spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -51,19 +514,102 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Toast animation */
-#toast.show {
-  opacity: 1;
+/* Select styling */
+select.form-input {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B6B6B' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 
-/* Delete button */
+/* ==================== BUTTONS ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn--primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+}
+
+.btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(193, 123, 95, 0.3);
+}
+
+/* ==================== EXPENSE LIST ==================== */
+.expense-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-base), border-color var(--transition-base);
+}
+
+.expense-row + .expense-row {
+  margin-top: 8px;
+}
+
+.expense-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.expense-row__category {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.expense-row__date {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.expense-row__amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
 .delete-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .expense-row:hover .delete-btn {
   opacity: 1;
+}
+
+.delete-btn:hover {
+  color: var(--color-error);
+  background-color: rgba(199, 80, 80, 0.1);
 }
 
 @media (max-width: 640px) {
@@ -71,3 +617,140 @@ input[type="number"] {
     opacity: 1;
   }
 }
+
+/* ==================== BUDGET ITEM ==================== */
+.budget-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.budget-item__label {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.budget-item__input {
+  width: 100px;
+}
+
+.budget-item__input .form-input {
+  text-align: right;
+  padding: 8px 10px;
+  padding-left: 24px;
+  font-size: 14px;
+}
+
+.budget-item__input .input-prefix {
+  left: 8px;
+  font-size: 14px;
+}
+
+/* ==================== DASHBOARD CATEGORY ==================== */
+.dashboard-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.dashboard-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dashboard-item:first-child {
+  padding-top: 0;
+}
+
+.dashboard-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.dashboard-item__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-item__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.dashboard-item__values {
+  text-align: right;
+}
+
+.dashboard-item__spent {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dashboard-item__budget {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+/* ==================== EMPTY STATE ==================== */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--color-text-tertiary);
+}
+
+.empty-state p {
+  margin-bottom: 4px;
+}
+
+.empty-state p:last-child {
+  font-size: 13px;
+}
+
+/* ==================== FOOTER ==================== */
+.footer {
+  margin-top: auto;
+  padding: 32px 0;
+  text-align: center;
+  border-top: 1px solid var(--color-border);
+}
+
+.footer__text {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+}
+
+/* ==================== TOAST ==================== */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  padding: 10px 20px;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+/* ==================== UTILITIES ==================== */
+.hidden {
+  display: none !important;
+}
+
+.text-success { color: var(--color-success); }
+.text-error { color: var(--color-error); }
+.text-warning { color: var(--color-warning); }

@@ -9,12 +9,48 @@ let currentTab = 'dashboard'
 // ==================== INITIALIZATION ====================
 
 function init() {
+  // Remove no-transitions class after page load
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove('no-transitions')
+    })
+  })
+
+  // Setup theme toggle
+  setupThemeToggle()
+
+  // Show appropriate view
   if (state.isFirstUse()) {
     showOnboarding()
   } else {
     showMainApp()
   }
 }
+
+// ==================== THEME ====================
+
+function setupThemeToggle() {
+  const toggle = document.getElementById('theme-toggle')
+  if (!toggle) return
+
+  toggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
+
+    if (newTheme === 'light') {
+      document.documentElement.removeAttribute('data-theme')
+      localStorage.removeItem('theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', newTheme)
+      localStorage.setItem('theme', newTheme)
+    }
+
+    // Update aria-label
+    toggle.setAttribute('aria-label', newTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')
+  })
+}
+
+// ==================== ONBOARDING ====================
 
 function showOnboarding() {
   document.getElementById('onboarding').classList.remove('hidden')
@@ -26,6 +62,8 @@ function showOnboarding() {
     showMainApp()
   })
 }
+
+// ==================== MAIN APP ====================
 
 function showMainApp() {
   document.getElementById('onboarding').classList.add('hidden')
@@ -101,7 +139,10 @@ function renderSummary() {
 
   const leftEl = document.getElementById('summary-left')
   leftEl.textContent = formatCurrency(left, currency)
-  leftEl.className = `text-lg font-bold mt-1 ${left >= 0 ? 'text-green-600' : 'text-red-600'}`
+
+  // Update class for positive/negative
+  leftEl.classList.remove('summary-card__value--positive', 'summary-card__value--negative')
+  leftEl.classList.add(left >= 0 ? 'summary-card__value--positive' : 'summary-card__value--negative')
 }
 
 function renderTabContent() {
