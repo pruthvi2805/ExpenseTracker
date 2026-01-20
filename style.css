@@ -114,26 +114,22 @@ body {
   align-items: center;
 }
 
-/* Hub Link */
-.hub-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  color: var(--color-text-tertiary);
-  border-radius: 6px;
-  transition: color var(--transition-fast), background-color var(--transition-fast);
-}
-
-.hub-link:hover {
-  color: var(--color-text);
+/* Site Strip - Cross-site navigation */
+.site-strip {
   background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
+  padding: 6px 24px;
 }
 
-.hub-link svg {
-  width: 18px;
-  height: 18px;
+.site-strip__link {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+}
+
+.site-strip__link:hover {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
 }
 
 /* Brand Badge */
