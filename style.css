@@ -504,14 +504,14 @@ body {
   border-radius: var(--border-radius-sm);
   background-color: var(--color-bg-elevated);
   color: var(--color-text);
-  transition: border-color var(--transition-fast);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   min-height: 48px;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-glow);
+  box-shadow: 0 0 0 2px var(--color-primary-glow);
 }
 
 .form-input::placeholder {
