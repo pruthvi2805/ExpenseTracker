@@ -46,10 +46,10 @@ function setupThemeToggle() {
 
     if (newTheme === 'light') {
       document.documentElement.removeAttribute('data-theme')
-      localStorage.removeItem('theme')
+      localStorage.removeItem('kp-theme')
     } else {
       document.documentElement.setAttribute('data-theme', newTheme)
-      localStorage.setItem('theme', newTheme)
+      localStorage.setItem('kp-theme', newTheme)
     }
 
     // Update aria-label

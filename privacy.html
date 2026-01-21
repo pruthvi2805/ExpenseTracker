@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://expense.kpruthvi.com/privacy">
+  <title>Privacy Policy - Expense Tracker</title>
+  <meta name="description" content="Expense Tracker privacy policy. Learn how we protect your data by storing everything locally in your browser.">
+  <!-- Theme initialization -->
+  <script>
+    (function() {
+      var theme = localStorage.getItem('kp-theme');
+      if (theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+    })();
+  </script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary: #22c55e;
+      --color-primary-dark: #16a34a;
+      --color-primary-light: #4ade80;
+      --color-primary-glow: rgba(74, 222, 128, 0.2);
+      --color-bg: #F8FAFC;
+      --color-bg-secondary: #F1F5F9;
+      --color-bg-elevated: #FFFFFF;
+      --color-text: #0F172A;
+      --color-text-secondary: #475569;
+      --color-text-tertiary: #94A3B8;
+      --color-border: #E2E8F0;
+    }
+
+    [data-theme="dark"] {
+      --color-primary: #4ade80;
+      --color-primary-dark: #22c55e;
+      --color-primary-light: #86efac;
+      --color-primary-glow: rgba(74, 222, 128, 0.15);
+      --color-bg: #0F172A;
+      --color-bg-secondary: #1E293B;
+      --color-bg-elevated: #1E293B;
+      --color-text: #F8FAFC;
+      --color-text-secondary: #CBD5E1;
+      --color-text-tertiary: #64748B;
+      --color-border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Header */
+    .header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .header__content {
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--color-text);
+    }
+
+    .brand-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .back-link {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .back-link:hover {
+      color: var(--color-primary);
+      background-color: var(--color-bg-secondary);
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+      width: 100%;
+    }
+
+    /* Privacy Header */
+    .privacy-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .privacy-icon {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--color-primary-glow);
+      border-radius: 12px;
+      color: var(--color-primary);
+    }
+
+    .privacy-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+
+    .privacy-subtitle {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Content Sections */
+    .content-section {
+      margin-bottom: 32px;
+    }
+
+    .content-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 12px;
+    }
+
+    .content-section p {
+      color: var(--color-text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .content-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .content-section li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      color: var(--color-primary);
+      margin-top: 2px;
+    }
+
+    /* Highlight Box */
+    .highlight-box {
+      padding: 16px;
+      background-color: var(--color-primary-glow);
+      border: 1px solid var(--color-primary);
+      border-radius: 8px;
+      color: var(--color-primary);
+      font-weight: 500;
+    }
+
+    /* Link */
+    a.text-link {
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    a.text-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Back to app */
+    .back-section {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .back-section a {
+      font-size: 14px;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .back-section a:hover {
+      text-decoration: underline;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 24px 20px;
+      text-align: center;
+      border-top: 1px solid var(--color-border);
+    }
+
+    .footer__text {
+      font-size: 13px;
+      color: var(--color-text-tertiary);
+    }
+
+    .footer__text a {
+      color: var(--color-text-tertiary);
+      text-decoration: none;
+    }
+
+    .footer__text a:hover {
+      color: var(--color-text-secondary);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header__content">
+      <a href="index.html" class="brand">
+        <span class="brand-badge">ET</span>
+        <span class="brand-name">Expense Tracker</span>
+      </a>
+      <a href="index.html" class="back-link">&larr; Back to app</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="privacy-header">
+      <div class="privacy-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="privacy-title">Privacy Policy</h1>
+        <p class="privacy-subtitle">Your data stays on your device</p>
+      </div>
+    </div>
+
+    <section class="content-section">
+      <h2>The Short Version</h2>
+      <div class="highlight-box">
+        Expense Tracker stores all data locally in your browser. Nothing is ever sent to any server.
+      </div>
+    </section>
+
+    <section class="content-section">
+      <h2>What We Don't Collect</h2>
+      <ul>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Your expense data or financial information</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Your budget settings or categories</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Any personal information</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Usage analytics or telemetry</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Cookies or tracking data</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>IP addresses or location data</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="content-section">
+      <h2>How It Works</h2>
+      <p>
+        Expense Tracker is a static website with no backend server. All your data is stored using your browser's localStorage:
+      </p>
+      <ul>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Expenses? Stored in your browser.</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Budgets? Stored in your browser.</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Settings? Stored in your browser.</span>
+        </li>
+        <li>
+          <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Charts and calculations? All done in your browser.</span>
+        </li>
+      </ul>
+      <p>
+        There is literally no server to send data to. The site is hosted as static files on Cloudflare Pages.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Important Note</h2>
+      <p>
+        Because all data is stored locally in your browser, clearing your browser data will erase your expenses. Consider this before clearing cookies or site data.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Third-Party Services</h2>
+      <p>
+        The only external resources loaded are Google Fonts for typography. No analytics, no tracking pixels, no advertising scripts.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Open Source</h2>
+      <p>
+        Expense Tracker is open source. You can verify these claims by reviewing the source code on <a href="https://github.com/pruthvi2805/ExpenseTracker" target="_blank" rel="noopener noreferrer" class="text-link">GitHub</a>.
+      </p>
+    </section>
+
+    <section class="content-section">
+      <h2>Questions?</h2>
+      <p>
+        If you have any questions about this privacy policy, feel free to reach out via <a href="https://kpruthvi.com/contact" target="_blank" rel="noopener noreferrer" class="text-link">the contact page</a>.
+      </p>
+    </section>
+
+    <div class="back-section">
+      <a href="index.html">&larr; Back to Expense Tracker</a>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">&copy; 2026 Pruthvi Kauticwar · <a href="https://www.kpruthvi.com">kpruthvi.com</a></p>
+  </footer>
+</body>
+</html>

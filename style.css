@@ -1,10 +1,10 @@
 /* ==================== CSS VARIABLES ==================== */
 :root {
-  /* Primary Colors - Modern Teal */
-  --color-primary: #14B8A6;
-  --color-primary-dark: #0D9488;
-  --color-primary-light: #2DD4BF;
-  --color-primary-glow: rgba(20, 184, 166, 0.2);
+  /* Primary Colors - Green (unified brand) */
+  --color-primary: #22c55e;
+  --color-primary-dark: #16a34a;
+  --color-primary-light: #4ade80;
+  --color-primary-glow: rgba(74, 222, 128, 0.2);
 
   /* Background Colors - Cool tinted */
   --color-bg: #F8FAFC;
@@ -51,10 +51,10 @@
 
 /* Dark Mode */
 [data-theme="dark"] {
-  --color-primary: #2DD4BF;
-  --color-primary-dark: #14B8A6;
-  --color-primary-light: #5EEAD4;
-  --color-primary-glow: rgba(45, 212, 191, 0.15);
+  --color-primary: #4ade80;
+  --color-primary-dark: #22c55e;
+  --color-primary-light: #86efac;
+  --color-primary-glow: rgba(74, 222, 128, 0.15);
 
   --color-bg: #0F172A;
   --color-bg-secondary: #1E293B;
@@ -134,6 +134,51 @@ body {
 .header__right {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+/* Privacy Badge */
+.privacy-badge {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-primary);
+  background-color: var(--color-primary-glow);
+  border-radius: 6px;
+}
+
+@media (min-width: 400px) {
+  .privacy-badge {
+    display: flex;
+  }
+}
+
+.privacy-badge__icon {
+  flex-shrink: 0;
+}
+
+.privacy-badge__text {
+  white-space: nowrap;
+}
+
+/* GitHub Link */
+.github-link {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.github-link:hover {
+  color: var(--color-text);
+  background-color: var(--color-bg-secondary);
 }
 
 
@@ -156,7 +201,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(20, 184, 166, 0.25);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -297,7 +342,7 @@ body {
 
 #get-started-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 /* Storage Notice */
@@ -812,7 +857,7 @@ select.form-input {
 
 .btn--primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 /* ==================== EXPENSE LIST ==================== */
