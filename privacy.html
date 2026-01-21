@@ -9,10 +9,8 @@
   <!-- Theme initialization -->
   <script>
     (function() {
-      var theme = localStorage.getItem('kp-theme');
-      if (theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-      }
+      var theme = localStorage.getItem('kp-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
   <!-- Google Fonts -->
