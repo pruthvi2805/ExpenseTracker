@@ -262,3 +262,80 @@ export function setupExpenseListHandlers(monthKey, onDelete) {
     })
   })
 }
+
+// ==================== CHARTS VIEW ====================
+
+export function renderCharts(monthKey) {
+  const spent = state.getSpentByCategory(monthKey)
+  const currency = getCurrency()
+
+  // Calculate total spending and get categories with spending
+  const spendingData = categories
+    .map(cat => ({
+      ...cat,
+      amount: spent[cat.id] || 0
+    }))
+    .filter(cat => cat.amount > 0)
+    .sort((a, b) => b.amount - a.amount)
+
+  const totalSpent = spendingData.reduce((sum, cat) => sum + cat.amount, 0)
+
+  if (totalSpent === 0) {
+    return `
+      <div class="empty-state">
+        <p class="empty-state__title">No spending data yet</p>
+        <p class="empty-state__desc">Visual breakdown of your expenses by category</p>
+        <p class="empty-state__hint">Add some expenses to see your spending chart</p>
+      </div>
+    `
+  }
+
+  // Build conic gradient for donut chart
+  let gradientStops = []
+  let currentAngle = 0
+  spendingData.forEach(cat => {
+    const percent = (cat.amount / totalSpent) * 100
+    const startAngle = currentAngle
+    currentAngle += percent
+    gradientStops.push(`${cat.color} ${startAngle}% ${currentAngle}%`)
+  })
+  const gradient = gradientStops.join(', ')
+
+  return `
+    <div class="charts-container">
+      <!-- Donut Chart -->
+      <div class="chart-card">
+        <div class="donut-chart-wrapper">
+          <div class="donut-chart" style="background: conic-gradient(${gradient})">
+            <div class="donut-hole">
+              <span class="donut-total-label">Total</span>
+              <span class="donut-total-amount">${formatCurrency(totalSpent, currency)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legend / Breakdown -->
+      <div class="chart-card">
+        <h3 class="card__title">Spending Breakdown</h3>
+        <div class="chart-legend">
+          ${spendingData.map(cat => {
+            const percent = ((cat.amount / totalSpent) * 100).toFixed(1)
+            return `
+              <div class="legend-item">
+                <div class="legend-item__left">
+                  <span class="legend-dot" style="background-color: ${cat.color}"></span>
+                  <span class="legend-label">${cat.label}</span>
+                </div>
+                <div class="legend-item__right">
+                  <span class="legend-amount">${formatCurrency(cat.amount, currency)}</span>
+                  <span class="legend-percent">${percent}%</span>
+                </div>
+              </div>
+            `
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `
+}

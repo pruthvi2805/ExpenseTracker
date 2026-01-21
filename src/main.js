@@ -167,6 +167,10 @@ function renderTabContent() {
       container.innerHTML = ui.renderExpenseList(currentMonth)
       ui.setupExpenseListHandlers(currentMonth, handleDeleteExpense)
       break
+
+    case 'charts':
+      container.innerHTML = ui.renderCharts(currentMonth)
+      break
   }
 }
 
