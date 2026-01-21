@@ -770,12 +770,23 @@ input[type="date"]::-webkit-date-and-time-value {
   color: var(--color-text-tertiary);
 }
 
-.empty-state p {
-  margin-bottom: 4px;
+.empty-state__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
 }
 
-.empty-state p:last-child {
+.empty-state__desc {
+  font-size: 14px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 16px;
+}
+
+.empty-state__hint {
   font-size: 13px;
+  color: var(--color-text-tertiary);
+  opacity: 0.8;
 }
 
 /* ==================== FOOTER ==================== */

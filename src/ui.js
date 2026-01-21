@@ -36,8 +36,9 @@ export function renderDashboard(monthKey) {
   if (activeCategories.length === 0) {
     return `
       <div class="empty-state">
-        <p>No budget set for this month</p>
-        <p>Go to Budget tab to set your spending limits</p>
+        <p class="empty-state__title">No budget set for this month</p>
+        <p class="empty-state__desc">Track spending against your budget limits here</p>
+        <p class="empty-state__hint">Go to Budget tab to set your spending limits</p>
       </div>
     `
   }
@@ -215,8 +216,9 @@ export function renderExpenseList(monthKey) {
   if (expenses.length === 0) {
     return `
       <div class="empty-state">
-        <p>No expenses this month</p>
-        <p>Go to Add tab to record an expense</p>
+        <p class="empty-state__title">No expenses this month</p>
+        <p class="empty-state__desc">View and manage all your recorded expenses here</p>
+        <p class="empty-state__hint">Go to Add tab to record an expense</p>
       </div>
     `
   }
