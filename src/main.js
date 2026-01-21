@@ -1,6 +1,7 @@
 import * as state from './state.js'
 import * as ui from './ui.js'
 import { formatCurrency, formatMonthKey, getCurrentMonthKey, getPrevMonthKey, getNextMonthKey, generateId, getMonthKeyFromDate } from './utils.js'
+import { initDatePicker } from './datepicker.js'
 
 // App state
 let currentMonth = getCurrentMonthKey()
@@ -18,6 +19,9 @@ function init() {
 
   // Setup theme toggle
   setupThemeToggle()
+
+  // Setup date picker
+  initDatePicker()
 
   // Show appropriate view
   if (state.isFirstUse()) {

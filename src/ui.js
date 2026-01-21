@@ -1,6 +1,7 @@
 import { categories, getCategoryById, categoryIcons } from './categories.js'
 import { formatCurrency, formatDate, getTodayDate } from './utils.js'
 import * as state from './state.js'
+import { openDatePicker, formatDateDisplay } from './datepicker.js'
 
 // Get currency from settings
 function getCurrency() {
@@ -104,7 +105,12 @@ export function renderAddExpense(monthKey) {
 
       <div class="form-group">
         <label class="form-label">Date</label>
-        <input type="date" id="expense-date" value="${today}" class="form-input">
+        <div class="date-input-wrapper">
+          <input type="hidden" id="expense-date" value="${today}">
+          <button type="button" id="expense-date-btn" class="form-input date-display">
+            ${formatDateDisplay(today)}
+          </button>
+        </div>
       </div>
 
       <button id="save-expense-btn" class="btn btn--primary">
@@ -115,6 +121,20 @@ export function renderAddExpense(monthKey) {
 }
 
 export function setupAddExpenseHandlers(monthKey, onSave) {
+  // Date picker button
+  const dateBtn = document.getElementById('expense-date-btn')
+  const dateInput = document.getElementById('expense-date')
+
+  if (dateBtn && dateInput) {
+    dateBtn.addEventListener('click', () => {
+      openDatePicker(dateInput.value, (selectedDate) => {
+        dateInput.value = selectedDate
+        dateBtn.textContent = formatDateDisplay(selectedDate)
+      })
+    })
+  }
+
+  // Save button
   const btn = document.getElementById('save-expense-btn')
   if (btn) {
     btn.addEventListener('click', () => {

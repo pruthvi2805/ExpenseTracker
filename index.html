@@ -159,6 +159,36 @@
   <!-- Toast Container -->
   <div id="toast">Saved!</div>
 
+  <!-- Date Picker Modal -->
+  <div id="date-picker-overlay" class="date-picker-overlay"></div>
+  <div id="date-picker" class="date-picker">
+    <div class="date-picker__header">
+      <button type="button" class="date-picker__nav-btn" id="date-picker-prev">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <span class="date-picker__title" id="date-picker-title">January 2026</span>
+      <button type="button" class="date-picker__nav-btn" id="date-picker-next">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+    <div class="date-picker__weekdays">
+      <span class="date-picker__weekday">Su</span>
+      <span class="date-picker__weekday">Mo</span>
+      <span class="date-picker__weekday">Tu</span>
+      <span class="date-picker__weekday">We</span>
+      <span class="date-picker__weekday">Th</span>
+      <span class="date-picker__weekday">Fr</span>
+      <span class="date-picker__weekday">Sa</span>
+    </div>
+    <div class="date-picker__days" id="date-picker-days">
+      <!-- Days will be rendered by JS -->
+    </div>
+  </div>
+
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
