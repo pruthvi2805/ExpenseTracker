@@ -1388,3 +1388,42 @@ select.form-input {
 .text-success { color: var(--color-success); }
 .text-error { color: var(--color-error); }
 .text-warning { color: var(--color-warning); }
+
+/* ==================== PAGE LOAD ANIMATION ==================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header,
+.month-nav,
+.summary-cards,
+.tab-nav,
+#tab-content,
+.footer {
+  animation: fadeIn 0.4s ease both;
+}
+
+.header { animation-delay: 0.05s; }
+.month-nav { animation-delay: 0.1s; }
+.summary-cards { animation-delay: 0.15s; }
+.tab-nav { animation-delay: 0.2s; }
+#tab-content { animation-delay: 0.25s; }
+.footer { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .month-nav,
+  .summary-cards,
+  .tab-nav,
+  #tab-content,
+  .footer {
+    animation: none;
+  }
+}
