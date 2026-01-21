@@ -300,6 +300,46 @@ body {
   box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
 }
 
+/* Storage Notice */
+.storage-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  background-color: var(--color-primary-glow);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 14px 16px;
+  margin: 0 auto 28px;
+  max-width: 320px;
+}
+
+.storage-notice__icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+  margin-top: 1px;
+}
+
+.storage-notice__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.storage-notice__text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.storage-notice__text span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
 /* ==================== MONTH NAVIGATION ==================== */
 .month-nav {
   display: flex;
