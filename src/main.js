@@ -23,6 +23,9 @@ function init() {
   // Setup date picker
   initDatePicker()
 
+  // Setup help modal
+  setupHelpModal()
+
   // Show appropriate view
   if (state.isFirstUse()) {
     showOnboarding()
@@ -52,6 +55,32 @@ function setupThemeToggle() {
     // Update aria-label
     toggle.setAttribute('aria-label', newTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode')
   })
+}
+
+// ==================== HELP MODAL ====================
+
+function setupHelpModal() {
+  const helpLink = document.getElementById('help-link')
+  const helpOverlay = document.getElementById('help-overlay')
+  const helpModal = document.getElementById('help-modal')
+  const helpClose = document.getElementById('help-close')
+
+  if (!helpLink || !helpOverlay || !helpModal) return
+
+  function openHelp(e) {
+    e.preventDefault()
+    helpOverlay.classList.add('show')
+    helpModal.classList.add('show')
+  }
+
+  function closeHelp() {
+    helpOverlay.classList.remove('show')
+    helpModal.classList.remove('show')
+  }
+
+  helpLink.addEventListener('click', openHelp)
+  helpOverlay.addEventListener('click', closeHelp)
+  helpClose.addEventListener('click', closeHelp)
 }
 
 // ==================== ONBOARDING ====================

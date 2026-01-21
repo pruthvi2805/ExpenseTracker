@@ -152,12 +152,89 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <p class="footer__text">&copy; 2026 Pruthvi Kauticwar · <a href="https://www.kpruthvi.com">kpruthvi.com</a></p>
+      <p class="footer__text">&copy; 2026 Pruthvi Kauticwar · <a href="https://www.kpruthvi.com">kpruthvi.com</a> · <a href="#" id="help-link">How to use</a></p>
     </footer>
   </div>
 
   <!-- Toast Container -->
   <div id="toast">Saved!</div>
+
+  <!-- Help Modal -->
+  <div id="help-overlay" class="help-overlay"></div>
+  <div id="help-modal" class="help-modal">
+    <div class="help-modal__header">
+      <h2 class="help-modal__title">How to Use</h2>
+      <button type="button" class="help-modal__close" id="help-close">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="help-modal__content">
+      <div class="help-section">
+        <div class="help-section__icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/>
+            <rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+          </svg>
+        </div>
+        <div class="help-section__text">
+          <strong>Overview</strong>
+          <p>See your spending vs budget at a glance. Categories show progress bars when budgets are set.</p>
+        </div>
+      </div>
+      <div class="help-section">
+        <div class="help-section__icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </div>
+        <div class="help-section__text">
+          <strong>Add Expense</strong>
+          <p>Record expenses with amount, category, and date. Expenses auto-sort to the correct month.</p>
+        </div>
+      </div>
+      <div class="help-section">
+        <div class="help-section__icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/><path d="M6 14h4"/>
+          </svg>
+        </div>
+        <div class="help-section__text">
+          <strong>Budget</strong>
+          <p>Set monthly income and spending limits per category. Changes save automatically.</p>
+        </div>
+      </div>
+      <div class="help-section">
+        <div class="help-section__icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
+          </svg>
+        </div>
+        <div class="help-section__text">
+          <strong>Charts</strong>
+          <p>Visual breakdown of spending by category with percentages and totals.</p>
+        </div>
+      </div>
+      <div class="help-section">
+        <div class="help-section__icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+          </svg>
+        </div>
+        <div class="help-section__text">
+          <strong>History</strong>
+          <p>View and delete past expenses. Swipe or hover to reveal delete button.</p>
+        </div>
+      </div>
+      <div class="help-notice">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <p><strong>Privacy:</strong> All data is stored locally on your device. Nothing is sent to any server. Clearing browser data will erase your expenses.</p>
+      </div>
+    </div>
+  </div>
 
   <!-- Date Picker Modal -->
   <div id="date-picker-overlay" class="date-picker-overlay"></div>
