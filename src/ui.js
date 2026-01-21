@@ -18,7 +18,7 @@ export function showToast(message = 'Saved!') {
   const toast = document.getElementById('toast')
   toast.textContent = message
   toast.classList.add('show')
-  setTimeout(() => toast.classList.remove('show'), 2000)
+  setTimeout(() => toast.classList.remove('show'), 1200)
 }
 
 // ==================== DASHBOARD VIEW ====================
@@ -195,13 +195,12 @@ export function setupBudgetHandlers(monthKey) {
     })
   }
 
-  // Budget inputs
+  // Budget inputs - auto-save without toast (less intrusive)
   document.querySelectorAll('.budget-input').forEach(input => {
     input.addEventListener('change', () => {
       const categoryId = input.dataset.category
       const amount = parseFloat(input.value) || 0
       state.setBudget(monthKey, categoryId, amount)
-      showToast('Budget saved')
       window.dispatchEvent(new Event('data-changed'))
     })
   })
