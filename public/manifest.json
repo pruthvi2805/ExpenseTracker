@@ -1,0 +1,42 @@
+{
+  "name": "Expense Tracker - Private Budget & Spending Tracker",
+  "short_name": "Expense Tracker",
+  "description": "Track expenses and budgets privately. Runs entirely in your browser - no accounts, no servers, no data collection.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "portrait-primary",
+  "categories": ["finance", "productivity", "utilities"],
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192' fill='none'><rect width='192' height='192' rx='36' fill='%230d1117'/><path d='M48 72h96M48 120h96M72 72v48M120 72v48' stroke='%2358a6ff' stroke-width='12' stroke-linecap='round'/><circle cx='96' cy='96' r='18' stroke='%233fb950' stroke-width='12'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' fill='none'><rect width='512' height='512' rx='96' fill='%230d1117'/><path d='M128 192h256M128 320h256M192 192v128M320 192v128' stroke='%2358a6ff' stroke-width='32' stroke-linecap='round'/><circle cx='256' cy='256' r='48' stroke='%233fb950' stroke-width='32'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.svg",
+      "sizes": "1200x630",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ],
+  "features": [
+    "Track expenses by category",
+    "Set monthly budgets",
+    "Visual spending analytics",
+    "Offline functionality",
+    "100% privacy - no data collection",
+    "Mobile-friendly interface"
+  ]
+}

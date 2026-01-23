@@ -1,0 +1,23 @@
+/* TEAM */
+Developer & Designer: Pruthvi Kauticwar
+Site: https://www.kpruthvi.com
+Location: India
+
+/* SITE */
+Standards: HTML5, CSS3, JavaScript ES6+
+Components: Vite, Tailwind CSS (CDN)
+Software: VS Code
+
+/* THANKS */
+To everyone who values privacy and open source software.
+
+/* TECH */
+Last update: 2026/01/23
+Language: English
+Doctype: HTML5
+IDE: Visual Studio Code
+
+/* PRIVACY */
+This site collects no data. Everything stays on your device.
+No cookies, no tracking, no servers, no databases.
+100% client-side, 100% private.

@@ -6,8 +6,13 @@
   <link rel="canonical" href="https://expense.kpruthvi.com/">
   <title>Expense Tracker - Private Budget & Spending Tracker</title>
   <meta name="description" content="Track expenses and budgets privately. Runs entirely in your browser - no accounts, no servers, no data collection. Free and simple.">
+  <meta name="keywords" content="expense tracker, budget tracker, personal finance, privacy, offline app, local storage, no account, free budget app, spending tracker, financial planning">
   <meta name="author" content="Pruthvi Kauticwar">
   <meta name="robots" content="index, follow">
+  <meta name="application-name" content="Expense Tracker">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Expense Tracker">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -15,12 +20,64 @@
   <meta property="og:title" content="Expense Tracker - Private Budget & Spending Tracker">
   <meta property="og:description" content="Track expenses and budgets privately. Runs entirely in your browser - no accounts, no data collection.">
 
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Expense Tracker - Private Budget & Spending Tracker">
+  <meta name="twitter:description" content="Track expenses and budgets privately. Runs entirely in your browser - no accounts, no data collection.">
+  <meta name="twitter:creator" content="@kpruthvi">
+
+  <!-- Additional Open Graph -->
+  <meta property="og:site_name" content="Expense Tracker">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://expense.kpruthvi.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Expense Tracker - Privacy-first expense tracking">
+
   <!-- Theme color -->
   <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f8faf9" media="(prefers-color-scheme: light)">
 
   <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 fill=%22none%22><rect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230d1117%22/><path d=%22M8 12h16M8 20h16M12 12v8M20 12v8%22 stroke=%22%2358a6ff%22 stroke-width=%222%22 stroke-linecap=%22round%22/><circle cx=%2216%22 cy=%2216%22 r=%223%22 stroke=%22%233fb950%22 stroke-width=%222%22/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22 fill=%22none%22><rect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230d1117%22/><path d=%22M8 12h16M8 20h16M12 12v8M20 12v8%22 stroke=%22%2258a6ff%22 stroke-width=%222%22 stroke-linecap=%22round%22/><circle cx=%2216%22 cy=%2216%22 r=%223%22 stroke=%22%233fb950%22 stroke-width=%222%22/></svg>">
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="author" href="/humans.txt">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Expense Tracker",
+    "description": "Track expenses and budgets privately. Runs entirely in your browser - no accounts, no servers, no data collection. Free and simple.",
+    "url": "https://expense.kpruthvi.com/",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any (Web-based)",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Pruthvi Kauticwar",
+      "url": "https://www.kpruthvi.com"
+    },
+    "browserRequirements": "Requires JavaScript and localStorage support",
+    "featureList": [
+      "Track expenses by category",
+      "Set monthly budgets",
+      "Visual spending analytics",
+      "Offline functionality",
+      "100% privacy - no data collection",
+      "Mobile-friendly interface"
+    ],
+    "screenshot": "https://expense.kpruthvi.com/og-image.png"
+  }
+  </script>
+
   <!-- Theme initialization (prevents flash of unstyled content) -->
   <script>
     (function() {
@@ -29,9 +86,11 @@
       document.documentElement.classList.add('no-transitions');
     })();
   </script>
-  <!-- Google Fonts -->
+  <!-- Google Fonts - Optimized loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -177,7 +236,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <p class="footer__text">&copy; 2026 Pruthvi Kauticwar · <a href="https://www.kpruthvi.com">kpruthvi.com</a> · <a href="privacy.html">Privacy</a> · <a href="#" id="help-link">How to use</a></p>
+      <p class="footer__text">&copy; 2026 Pruthvi Kauticwar · <a href="https://www.kpruthvi.com" target="_blank" rel="noopener noreferrer">kpruthvi.com</a> · <a href="/privacy.html">Privacy</a> · <a href="#" id="help-link">How to use</a></p>
     </footer>
   </div>
 
