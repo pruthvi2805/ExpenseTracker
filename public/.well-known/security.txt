@@ -1,0 +1,11 @@
+Contact: https://kpruthvi.com/contact
+Preferred-Languages: en
+Canonical: https://expense.kpruthvi.com/.well-known/security.txt
+Policy: https://expense.kpruthvi.com/privacy
+Hiring: https://www.kpruthvi.com
+
+# Security Information
+# This is a client-side only application with no backend.
+# All data is stored locally in the browser's localStorage.
+# No server-side vulnerabilities exist as there is no server.
+# For general inquiries, please use the contact page above.
